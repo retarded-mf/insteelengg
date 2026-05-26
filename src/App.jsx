@@ -7,6 +7,7 @@ import WhatWeDo from './pages/WhatWeDo';
 import ProjectsPage from './pages/ProjectsPage';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
+import Barricading from './pages/Barricading';
 import { useEffect } from 'react';
 
 // Scroll to top on route change
@@ -32,6 +33,7 @@ function App() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/products/barricading" element={<Barricading />} />
         </Routes>
       </Layout>
     </Router>

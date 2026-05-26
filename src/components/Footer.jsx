@@ -57,15 +57,15 @@ const Footer = () => {
               <li><Link to="/what-we-do?tab=engineering" className="text-gray-600 hover:text-primary-red text-sm font-medium">Engineering</Link></li>
               <li><Link to="/what-we-do?tab=construction" className="text-gray-600 hover:text-primary-red text-sm font-medium">Construction</Link></li>
               <li><Link to="/what-we-do?tab=solar" className="text-gray-600 hover:text-primary-red text-sm font-medium">Solar</Link></li>
-              <li><Link to="/what-we-do?tab=barricading" className="text-gray-600 hover:text-primary-red text-sm font-medium">Barricading</Link></li>
+              <li><Link to="/products/barricading" className="text-gray-600 hover:text-primary-red text-sm font-medium">Barricading</Link></li>
             </ul>
           </div>
 
           {/* Col 4: Certifications */}
           <div>
             <h4 className="text-charcoal font-bold uppercase tracking-wider mb-6">Certifications</h4>
-            <div className="grid grid-cols-2 gap-4">
-              {['ISO 9001:2015', 'AIS', 'CRISIL', 'NIS'].map((cert) => (
+            <div className="grid grid-cols-2">
+              {['ISO 9001:2015','NIS'].map((cert) => (
                 <div key={cert} className="h-16 bg-blue-grey border border-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 text-center px-2 uppercase">
                   {cert} Logo
                 </div>
@@ -76,7 +76,7 @@ const Footer = () => {
 
         <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <p className="text-gray-500 text-sm">
-            © 2025 Insteel Engineers Ltd. All Rights Reserved.
+            © 2026 Insteel Engineers Ltd. All Rights Reserved.
           </p>
           <div className="flex space-x-6 text-xs font-bold text-gray-400 uppercase tracking-widest">
             <a href="#" className="hover:text-primary-red transition-colors">Privacy Policy</a>

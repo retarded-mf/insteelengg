@@ -57,7 +57,7 @@ const HeroCarousel = () => {
           {/* Content */}
           <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 md:px-24">
             <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
-              <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-[0.6em] mb-4 opacity-80 border-l-2 border-primary-red pl-4">
+              <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4">
                 {slide.category}
               </h3>
               <h1 className="text-5xl md:text-8xl font-black text-white mb-10 leading-none uppercase tracking-tighter drop-shadow-2xl">
@@ -72,24 +72,23 @@ const HeroCarousel = () => {
         </div>
       ))}
 
-      {/* Navigation Controls */}
-      <div className="absolute bottom-12 right-12 z-30 flex items-center space-x-6">
-        <button
-          onClick={prev}
-          className="group flex items-center space-x-2 text-white/40 hover:text-white transition-colors"
-        >
-          <ChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Prev</span>
-        </button>
-        <div className="w-[1px] h-8 bg-white/20" />
-        <button
-          onClick={next}
-          className="group flex items-center space-x-2 text-white/40 hover:text-white transition-colors"
-        >
-          <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Next</span>
-          <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
+      {/* Navigation Controls — left / right center */}
+      <button
+        type="button"
+        onClick={prev}
+        aria-label="Previous slide"
+        className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-30 group flex items-center text-white/50 hover:text-white transition-colors"
+      >
+        <ChevronLeft size={40} className="group-hover:-translate-x-1 transition-transform" />
+      </button>
+      <button
+        type="button"
+        onClick={next}
+        aria-label="Next slide"
+        className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-30 group flex items-center text-white/50 hover:text-white transition-colors"
+      >
+        <ChevronRight size={40} className="group-hover:translate-x-1 transition-transform" />
+      </button>
 
       {/* Progress Line */}
       <div className="absolute bottom-0 left-0 h-1 bg-primary-red z-40 transition-all duration-8000 ease-linear" style={{ width: `${((current + 1) / slides.length) * 100}%` }} />

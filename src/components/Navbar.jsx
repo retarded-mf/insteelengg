@@ -9,6 +9,9 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
+// Shared preview image size for What We Do + Projects dropdowns (edit here)
+const MEGA_PREVIEW_IMAGE = 'w-[400px] min-h-[300px]';
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null); // 'who-we-are', 'what-we-do', 'projects'
@@ -20,7 +23,6 @@ const Navbar = () => {
     { name: 'What We Do', path: '/what-we-do', id: 'what-we-do' },
     { name: 'Projects', path: '/projects', id: 'projects' },
     { name: 'Blog', path: '/blog' },
-    { name: 'Contact Us', path: '/contact' },
   ];
 
   const whoWeAreMega = [
@@ -46,7 +48,7 @@ const Navbar = () => {
     ],
     others: [
       { name: 'Solar', path: '/what-we-do?tab=solar', img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800" },
-      { name: 'Barricading', path: '/what-we-do?tab=barricading', img: "https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Barricading', path: '/products/barricading', img: "https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" },
     ]
   };
 
@@ -66,25 +68,28 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white z-50 border-b border-gray-100" onMouseLeave={() => setActiveMega(null)}>
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative h-28 flex justify-between items-center">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative h-32 flex items-center">
         {/* Logo */}
         <Link to="/" className="flex-shrink-0" onMouseEnter={() => setActiveMega(null)}>
-          <Logo className="scale-125 origin-left" />
+          <Logo className="scale-[1.35] origin-left" />
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center space-x-12 h-full">
+        <div className="hidden lg:flex items-center space-x-14 h-full ml-auto justify-end">
           {navLinks.map((link) => (
             <div
               key={link.name}
-              className="h-full flex items-center"
+              className={cn(
+                "h-full flex items-center",
+                (link.id === 'who-we-are' || link.id === 'what-we-do') && "relative"
+              )}
               onMouseEnter={() => link.id && setActiveMega(link.id)}
             >
               <Link
                 to={link.path}
                 className={cn(
-                  "text-xs font-black uppercase tracking-[0.2em] transition-colors flex items-center h-full",
-                  location.pathname === link.path || (link.id === 'what-we-do' && location.pathname === '/what-we-do')
+                  "text-[15px] font-black uppercase tracking-[0.22em] transition-colors flex items-center h-full",
+                  location.pathname === link.path || (link.id === 'what-we-do' && (location.pathname === '/what-we-do' || location.pathname.startsWith('/products/')))
                     ? "text-primary-red" 
                     : "text-charcoal hover:text-primary-red"
                 )}
@@ -92,73 +97,85 @@ const Navbar = () => {
                 {link.name}
                 {link.id && <ChevronDown className={cn("ml-1 w-4 h-4 transition-transform", activeMega === link.id && "rotate-180")} />}
               </Link>
-            </div>
-          ))}
-          <Link to="/contact" className="btn-red !py-3 !px-10">
-            Get a Quote
-          </Link>
-        </div>
 
-        {/* Global Mega Menu Container - Centered relative to Navbar Container */}
-        {activeMega && (
-          <div 
-            className="absolute top-[112px] left-6 right-6 lg:left-12 lg:right-12 bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50 flex"
-            onMouseEnter={() => setActiveMega(activeMega)}
-          >
-            {/* Nav Links Column */}
-            <div className="flex-grow grid grid-cols-3 p-12 gap-x-12">
-              {activeMega === 'who-we-are' ? (
-                <div className="col-span-3">
-                   <h4 className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-8">Insteel Corporate Overview</h4>
-                   <div className="grid grid-cols-2 gap-x-12">
-                     {whoWeAreMega.map((s) => (
-                       <Link
-                         key={s.name}
-                         to={s.path}
-                         onMouseEnter={() => setActiveImage(s.img)}
-                         className="block py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5"
-                       >
-                         {s.name}
-                       </Link>
-                     ))}
-                   </div>
+              {/* Who We Are — anchored under this nav label only */}
+              {link.id === 'who-we-are' && activeMega === 'who-we-are' && (
+                <div
+                  className="absolute top-full left-0 w-[300px] bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50 py-8 px-8"
+                  onMouseEnter={() => setActiveMega('who-we-are')}
+                >
+                  <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-4">
+                    Insteel Corporate Overview
+                  </h4>
+                  <div className="space-y-0">
+                    {whoWeAreMega.map((s) => (
+                      <Link
+                        key={s.name}
+                        to={s.path}
+                        className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5"
+                      >
+                        {s.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              ) : activeMega === 'what-we-do' ? (
-                <>
-                  <div className="space-y-2 text-left">
-                     <h4 className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-6">Engineering</h4>
-                     {servicesMega.engineering.map((s) => (
-                       <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
-                     ))}
+              )}
+
+              {/* What We Do — centered under nav label (like Projects alignment) */}
+              {link.id === 'what-we-do' && activeMega === 'what-we-do' && (
+                <div
+                  className="absolute top-full left-1/2 -translate-x-1/2 flex items-stretch w-max bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50"
+                  onMouseEnter={() => setActiveMega('what-we-do')}
+                >
+                  <div className="grid grid-cols-3 gap-x-8 py-8 px-8 shrink-0">
+                    <div className="space-y-1 text-left w-[200px]">
+                      <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Engineering</h4>
+                      {servicesMega.engineering.map((s) => (
+                        <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                      ))}
+                    </div>
+                    <div className="space-y-1 text-left w-[200px]">
+                      <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Construction</h4>
+                      {servicesMega.construction.map((s) => (
+                        <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                      ))}
+                    </div>
+                    <div className="space-y-1 text-left w-[180px]">
+                      <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Divisions</h4>
+                      {servicesMega.others.map((s) => (
+                        <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2 text-left">
-                     <h4 className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-6">Construction</h4>
-                     {servicesMega.construction.map((s) => (
-                       <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
-                     ))}
+                  <div className={cn('relative bg-black shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
+                    <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent" />
                   </div>
-                  <div className="space-y-2 text-left">
-                     <h4 className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-6">Divisions</h4>
-                     {servicesMega.others.map((s) => (
-                       <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
-                     ))}
-                  </div>
-                </>
-              ) : (
-                <div className="col-span-3">
-                   <h4 className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-8">Landmark EPC Projects</h4>
-                   <div className="grid grid-cols-2 gap-x-12">
-                     {projectsMega.map((p) => (
-                       <Link key={p.name} to={p.path} onMouseEnter={() => setActiveImage(p.img)} className="block py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
-                     ))}
-                   </div>
                 </div>
               )}
             </div>
+          ))}
+          <Link to="/contact" className="btn-quote !text-[13px]">
+            <span>Contact Us</span>
+          </Link>
+        </div>
 
-            {/* Preview Image Column */}
-            <div className="w-[450px] relative bg-black shrink-0">
-              <img src={activeImage} alt="Category Preview" className="w-full h-full object-cover opacity-60 transition-all duration-700" />
+        {/* Projects mega menu — right-aligned under nav area */}
+        {activeMega === 'projects' && (
+          <div 
+            className="absolute top-[128px] right-6 lg:right-12 flex items-stretch w-max bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50"
+            onMouseEnter={() => setActiveMega('projects')}
+          >
+            <div className="py-8 px-8 w-[280px] shrink-0">
+              <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Landmark EPC Projects</h4>
+              <div className="grid grid-cols-1">
+                {projectsMega.map((p) => (
+                  <Link key={p.name} to={p.path} onMouseEnter={() => setActiveImage(p.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
+                ))}
+              </div>
+            </div>
+            <div className={cn('relative bg-black shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
+              <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent" />
             </div>
           </div>
@@ -177,11 +194,13 @@ const Navbar = () => {
         <div className="lg:hidden bg-white border-b border-gray-100 animate-in fade-in slide-in-from-top-4">
           <div className="px-6 pt-4 pb-12 space-y-2">
             {navLinks.map((link) => (
-              <Link key={link.name} to={link.path} className="block py-4 text-xs font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
+              <Link key={link.name} to={link.path} className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
                 {link.name}
               </Link>
             ))}
-            <Link to="/contact" className="btn-red w-full block text-center mt-8" onClick={() => setIsOpen(false)}>Get a Quote</Link>
+            <Link to="/contact" className="btn-quote w-full mt-8" onClick={() => setIsOpen(false)}>
+              <span>Contact Us</span>
+            </Link>
           </div>
         </div>
       )}

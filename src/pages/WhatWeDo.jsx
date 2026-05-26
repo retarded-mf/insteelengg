@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import ServicePanel from '../components/ServicePanel';
 import { engineeringServices, constructionServices } from '../data/services';
 import { ExternalLink, Shield, Sun, Building2, HardHat, Ruler } from 'lucide-react';
@@ -94,14 +94,14 @@ const WhatWeDo = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
-                { title: "In-Roof Solar Buildings", desc: "Patented structural solar implementation for industrial warehouses.", img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800" },
-                { title: "Solar Carports", desc: "Dual-utility structures for efficient parking and power generation.", img: "https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&q=80&w=800" },
-                { title: "Rooftop Solar", desc: "Custom designed racking for maximum energy yield on industrial roofs.", img: "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=800" },
-                { title: "Ground-Mounted Solar", desc: "Scaleable structures for utility-scale solar farms.", img: "https://images.unsplash.com/photo-1466611653911-95281773ad90?auto=format&fit=crop&q=80&w=800" },
+                { title: "In-Roof Solar Buildings", desc: "Patented structural solar implementation for industrial warehouses.", img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/in-roof-solar/" },
+                { title: "Solar Carports", desc: "Dual-utility structures for efficient parking and power generation.", img: "https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/car-roof-solar/" },
+                { title: "Rooftop Solar", desc: "Custom designed racking for maximum energy yield on industrial roofs.", img: "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/rooftop-solar/" },
+                { title: "Ground-Mounted Solar", desc: "Scaleable structures for utility-scale solar farms.", img: "https://images.unsplash.com/photo-1466611653911-95281773ad90?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/ground-mountaed-solar/" },
               ].map((solar, i) => (
                 <a 
                   key={i} 
-                  href="https://insteelsolar.com" 
+                  href={solar.href}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="group bg-blue-grey p-8 flex flex-col sm:flex-row items-center gap-8 hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-primary-red"
@@ -128,13 +128,16 @@ const WhatWeDo = () => {
                   <img src="https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" alt="Barricading" className="w-full h-full object-cover opacity-60" />
                </div>
                <div>
-                  <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase">Barricading Solutions</h2>
-                  <p className="text-lg text-gray-500 mb-8 leading-relaxed">
-                    Insteel manufactures high-quality permanent site barricading solutions, designed for durability and maximum safety during construction and industrial operations.
+                  <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase">Compliance Barricading</h2>
+                  <p className="text-lg text-gray-500 mb-4 leading-relaxed">
+                    Mandate-compliant 35 ft and 25 ft steel barricades—engineered, fabricated, and installed by an integrated EPC. Reduce stop-work risk before execution begins.
                   </p>
-                  <a href="https://insteelengg.com/products/" target="_blank" rel="noopener noreferrer" className="btn-red inline-flex items-center">
-                    View Products <ExternalLink size={20} className="ml-2" />
-                  </a>
+                  <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mb-8">
+                    ₹1–100 Cr. project scale · BMC / MMRDA aligned
+                  </p>
+                  <Link to="/products/barricading" className="btn-red inline-flex items-center">
+                    Explore Barricading <ExternalLink size={20} className="ml-2" />
+                  </Link>
                </div>
              </div>
           </div>

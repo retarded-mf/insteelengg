@@ -3,6 +3,9 @@ import { ArrowRight } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
 import { Link } from 'react-router-dom';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import WhyInsteel from '../components/WhyInsteel';
+import ClientProof from '../components/ClientProof';
+import StatCounter from '../components/StatCtr';
 
 const Home = () => {
   useScrollReveal();
@@ -27,12 +30,15 @@ const Home = () => {
                 {[
                   { label: "Years", val: "20+" },
                   { label: "Engineers", val: "150+" },
-                  { label: "Projects", val: "500+" },
+                  { label: "Sq. Ft. Office", val: "8000+" },
                   { label: "Clients", val: "200+" }
                 ].map((stat, i) => (
                   <div key={i} className="group">
-                    <div className="text-6xl font-black text-charcoal group-hover:text-primary-red transition-colors duration-500 tracking-tighter">{stat.val}</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mt-2">{stat.label}</div>
+                    <StatCounter
+                      value={stat.val}
+                      label={stat.label}
+                      valueClassName="text-6xl font-black text-charcoal group-hover:text-primary-red transition-colors duration-500 tracking-tighter"
+                    />
                   </div>
                 ))}
               </div>
@@ -56,35 +62,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Impact Section (Testimonial Strip) */}
-      <section className="py-40 bg-charcoal relative overflow-hidden flex items-center justify-center text-center px-6">
-        <div className="absolute inset-0 z-0 opacity-10">
-           <img src="https://images.unsplash.com/photo-1504307651254-35680f3366d4?auto=format&fit=crop&q=80&w=1920" className="w-full h-full object-cover" alt="Background" />
-        </div>
-        <div className="relative z-10 max-w-5xl">
-          <span className="text-primary-red text-6xl font-serif mb-8 block opacity-50">“</span>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight mb-12 italic">
-            Insteel's engineering precision and commitment to delivery timelines have been instrumental in the success of our complex structural projects.
-          </h2>
-          <div className="flex flex-col items-center">
-             <div className="w-20 h-[1px] bg-primary-red mb-6" />
-             <div className="text-white font-black uppercase tracking-[0.4em] text-xs">Chief Operating Officer</div>
-             <div className="text-white/40 font-black uppercase tracking-[0.2em] text-[10px] mt-2">Leading Infrastructure Group</div>
-          </div>
-        </div>
-      </section>
+      <WhyInsteel />
 
       {/* Section 6: Featured Projects */}
       <section className="py-32 bg-white relative overflow-hidden">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-          <div className="flex justify-between items-end mb-24 reveal-on-scroll">
-            <div>
-              <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">Archive</span>
-              <h2 className="text-charcoal font-black text-6xl md:text-8xl uppercase tracking-tighter leading-none">Our Work Speaks</h2>
-            </div>
-            <Link to="/projects" className="text-charcoal font-black uppercase text-xs tracking-[0.4em] hover:text-primary-red transition-colors hidden md:block">
-               Explore Full Portfolio [→]
-            </Link>
+          <div className="mb-24 reveal-on-scroll">
+            <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">Archive</span>
+            <h2 className="text-charcoal font-black text-6xl md:text-8xl uppercase tracking-tighter leading-none">Our Work Speaks</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
@@ -104,8 +89,21 @@ const Home = () => {
               </div>
             ))}
           </div>
+
+          <div className="mt-20 flex justify-center reveal-on-scroll">
+            <Link
+              to="/projects"
+              className="group inline-flex items-center gap-4 text-charcoal font-black uppercase text-xs tracking-[0.4em] hover:text-primary-red transition-colors"
+            >
+              Explore Full Portfolio
+              <span className="w-12 h-[2px] bg-charcoal group-hover:w-20 group-hover:bg-primary-red transition-all duration-500" />
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </section>
+
+      <ClientProof />
 
       {/* Section 7: Company Principles */}
       <section className="py-40 bg-blue-grey">
@@ -117,15 +115,15 @@ const Home = () => {
           <div className="space-y-60">
             {[
               { 
-                tag: "Manan", 
-                title: "Thought", 
+                tag: "Thought", 
+                title: "Manan", 
                 body: "Constantly building capabilities of self and people to create lasting value. We believe in the power of deliberate reflection and foresight in engineering.", 
                 img: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1200",
                 rev: false 
               },
               { 
-                tag: "Sadhana", 
-                title: "Way", 
+                tag: "Way To", 
+                title: "Sadhana", 
                 body: "To provide an engineering and construction platform of innovative, simplified solutions to structural projects through dedicated practice and refinement.", 
                 img: "https://images.unsplash.com/photo-1541888941259-79273ceb0022?auto=format&fit=crop&q=80&w=1200",
                 rev: true 
@@ -140,29 +138,6 @@ const Home = () => {
                   <span className="text-primary-red font-black text-xs uppercase tracking-[0.6em] mb-8 block opacity-50">/{prin.tag}/</span>
                   <h3 className="text-6xl md:text-8xl font-black text-charcoal mb-10 uppercase tracking-tighter leading-none">{prin.title}</h3>
                   <p className="text-2xl text-gray-400 leading-relaxed font-bold italic border-l-2 border-gray-100 pl-10">{prin.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 8: Testimonials Grid */}
-      <section className="py-32 bg-white">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
-            {[1, 2, 3].map((_, i) => (
-              <div key={i} className="reveal-on-scroll group">
-                <div className="text-primary-red text-6xl font-serif leading-none mb-8 opacity-20 group-hover:opacity-100 transition-opacity">“</div>
-                <p className="text-charcoal text-xl leading-relaxed mb-12 font-medium italic">
-                  "Insteel's engineering precision and commitment to delivery timelines have been instrumental in the success of our structural projects."
-                </p>
-                <div className="flex items-center space-x-6">
-                  <div className="w-12 h-[1px] bg-primary-red" />
-                  <div>
-                    <div className="font-black text-charcoal uppercase tracking-widest text-[10px]">Head of Engineering</div>
-                    <div className="text-[10px] text-gray-400 font-black uppercase mt-1 tracking-widest">Global Realty Group</div>
-                  </div>
                 </div>
               </div>
             ))}
