@@ -1,0 +1,73 @@
+export const projects = [
+  {
+    id: 1,
+    name: "Nyati Plaza",
+    location: "Pune",
+    category: "High-Rise Buildings (Steel)",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
+    description: "Multi-storey steel composite structure in the heart of Pune.",
+  },
+  {
+    id: 2,
+    name: "TCS Sahyadri Park",
+    location: "Mumbai",
+    category: "High-Rise Buildings (Steel)",
+    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800",
+    description: "Extensive steel works for one of the largest IT campuses.",
+  },
+  {
+    id: 3,
+    name: "Lucknow Airport",
+    location: "Lucknow",
+    category: "Airports",
+    image: "https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=800",
+    description: "Complex structural steel for the terminal building.",
+  },
+  {
+    id: 4,
+    name: "Mopa Airport",
+    location: "Goa",
+    category: "Airports",
+    image: "https://images.unsplash.com/photo-1473876637954-4b493d59fd97?auto=format&fit=crop&q=80&w=800",
+  },
+  {
+    id: 5,
+    name: "Godrej Play Bridge",
+    location: "Mumbai",
+    category: "Connecting Bridges",
+    image: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=800",
+  },
+  {
+    id: 6,
+    name: "Gandhinagar Station",
+    location: "Gandhinagar",
+    category: "Railway Stations",
+    image: "https://images.unsplash.com/photo-1474487548417-781fbc05477d?auto=format&fit=crop&q=80&w=800",
+  },
+  {
+    id: 7,
+    name: "Science Park",
+    location: "Ahmedabad",
+    category: "High-Rise Buildings",
+    image: "https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=800",
+  },
+  {
+    id: 8,
+    name: "Pondicherry Convention Centre",
+    location: "Pondicherry",
+    category: "Special Structures",
+    image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=800",
+  },
+];
+
+export const categories = [
+  "All",
+  "High-Rise Buildings (Steel)",
+  "Connecting Bridges",
+  "Composite Buildings",
+  "Railway Stations",
+  "Airports",
+  "Special Structures",
+  "Industrial",
+  "Roofing",
+];
