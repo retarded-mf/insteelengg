@@ -21,7 +21,7 @@ const slides = [
   },
   {
     category: "Special Structures",
-    title: "Center of Excellence Ahmedabad",
+    title: "Center of Excellence, Ahemdabad",
     image: "/src/assets/images/projects/composite/composite_coe-1.jpg",
     link: "/projects",
     objectPosition: "top",

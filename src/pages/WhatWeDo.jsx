@@ -67,7 +67,7 @@ const WhatWeDo = () => {
                 Our in-house design and detailing team utilizes world-class software like Tekla and REVIT to provide high-precision BIM models and connection designs. We ensure every bolt is accounted for before fabrication begins.
               </p>
             </div>
-            <ServicePanel services={engineeringServices} />
+            <ServicePanel services={engineeringServices} initialService={searchParams.get('service')} />
           </div>
         )}
 
@@ -79,7 +79,7 @@ const WhatWeDo = () => {
                 From scalable fabrication facilities across India to high-rise erection up to 300 meters, our construction capabilities are designed for scale, speed, and safety.
               </p>
             </div>
-            <ServicePanel services={constructionServices} />
+            <ServicePanel services={constructionServices} initialService={searchParams.get('service')} />
           </div>
         )}
 
