@@ -80,14 +80,14 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-charcoal flex items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6 relative overflow-hidden">
       
       {/* Background Architectural Vignette overlay */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(204,0,0,0.15)_0%,transparent_70%)]" />
-      <div className="absolute inset-0 z-0 opacity-10 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(204,0,0,0.05)_0%,transparent_70%)]" />
+      <div className="absolute inset-0 z-0 opacity-20 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       {/* Login Container */}
-      <div className="relative z-10 w-full max-w-md bg-white/[0.03] border border-white/10 backdrop-blur-xl p-8 sm:p-10 rounded-2xl shadow-2xl flex flex-col items-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
+      <div className="relative z-10 w-full max-w-md bg-white border border-slate-200/80 shadow-2xl p-8 sm:p-10 rounded-2xl flex flex-col items-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
         
         {/* Logo Header */}
         <div className="flex flex-col items-center space-y-3">
@@ -96,7 +96,7 @@ const AdminLogin = () => {
             <span className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-1 block">
               Control Portal
             </span>
-            <h2 className="text-white font-black text-xl uppercase tracking-tighter">
+            <h2 className="text-slate-950 font-black text-xl uppercase tracking-tighter">
               Admin CMS Console
             </h2>
           </div>
@@ -104,7 +104,7 @@ const AdminLogin = () => {
 
         {/* Error alert banner */}
         {error && (
-          <div className="w-full flex items-center gap-3.5 bg-primary-red/10 border border-primary-red/35 px-4 py-3 rounded text-[13px] text-red-200 animate-bounce">
+          <div className="w-full flex items-center gap-3.5 bg-red-50 border border-red-200 px-4 py-3 rounded text-[13px] text-red-700 animate-bounce">
             <AlertTriangle className="text-primary-red shrink-0" size={18} />
             <span className="font-bold">Invalid username or password.</span>
           </div>
@@ -114,11 +114,11 @@ const AdminLogin = () => {
         <form onSubmit={handleSubmit} className="w-full space-y-4">
           {/* Username */}
           <div className="space-y-2">
-            <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">
               Administrator ID
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-white/30">
+              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                 <User size={16} />
               </span>
               <input
@@ -127,18 +127,18 @@ const AdminLogin = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Username"
-                className="w-full bg-white/5 border border-white/10 focus:border-primary-red/60 focus:ring-1 focus:ring-primary-red/30 px-11 py-3.5 text-white placeholder-white/20 text-sm rounded transition-all focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-primary-red/60 focus:ring-1 focus:ring-primary-red/30 px-11 py-3.5 text-slate-900 placeholder-slate-400/60 text-sm rounded transition-all focus:outline-none"
               />
             </div>
           </div>
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">
               Secure Credentials
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-white/30">
+              <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                 <Key size={16} />
               </span>
               <input
@@ -147,7 +147,7 @@ const AdminLogin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-white/5 border border-white/10 focus:border-primary-red/60 focus:ring-1 focus:ring-primary-red/30 px-11 py-3.5 text-white placeholder-white/20 text-sm rounded transition-all focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-primary-red/60 focus:ring-1 focus:ring-primary-red/30 px-11 py-3.5 text-slate-900 placeholder-slate-400/60 text-sm rounded transition-all focus:outline-none"
               />
             </div>
           </div>
@@ -173,7 +173,7 @@ const AdminLogin = () => {
             {/* Go Back button (Return to site without /admin) */}
             <Link
               to="/"
-              className="w-full inline-flex items-center justify-center gap-3 py-3.5 border border-white/10 hover:border-white/20 text-white/60 hover:text-white font-black uppercase text-xs tracking-[0.3em] rounded transition-all duration-300 shadow-md active:scale-[0.98] focus:outline-none"
+              className="w-full inline-flex items-center justify-center gap-3 py-3.5 border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-black uppercase text-xs tracking-[0.3em] rounded transition-all duration-300 shadow-sm active:scale-[0.98] focus:outline-none"
             >
               <span>Return to Site</span>
             </Link>
@@ -181,14 +181,14 @@ const AdminLogin = () => {
         </form>
 
         {/* Demo hints */}
-        <div className="w-full text-center border-t border-white/5 pt-5">
-          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-white/20 mb-2">
+        <div className="w-full text-center border-t border-slate-100 pt-5">
+          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 mb-2">
             Development Demo Access
           </div>
-          <div className="inline-flex gap-4 text-[10px] text-white/40 font-bold bg-white/[0.02] border border-white/5 px-4 py-2 rounded">
-            <span>ID: <code className="text-white/60">admin</code></span>
-            <span className="w-[1px] h-3.5 bg-white/10 self-center" />
-            <span>Key: <code className="text-white/60">insteel2026</code></span>
+          <div className="inline-flex gap-4 text-[10px] text-slate-600 font-bold bg-slate-50 border border-slate-200/60 px-4 py-2 rounded">
+            <span>ID: <code className="text-slate-800">admin</code></span>
+            <span className="w-[1px] h-3.5 bg-slate-200 self-center" />
+            <span>Key: <code className="text-slate-800">insteel2026</code></span>
           </div>
         </div>
 
