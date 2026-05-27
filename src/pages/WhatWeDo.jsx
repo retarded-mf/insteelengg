@@ -28,7 +28,7 @@ const WhatWeDo = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <section className="pt-24 pb-12 bg-blue-grey text-center">
+      <section className="pt-32 pb-12 bg-blue-grey text-center">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-5xl md:text-6xl font-extrabold text-charcoal mb-4 uppercase tracking-tighter">What We Do</h1>
           <p className="text-primary-red font-bold uppercase tracking-[0.3em] text-sm">Comprehensive Infrastructure Solutions</p>

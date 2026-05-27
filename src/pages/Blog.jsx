@@ -55,7 +55,7 @@ const Blog = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <section className="py-24 bg-blue-grey border-b border-gray-100">
+      <section className="pt-32 pb-24 bg-blue-grey border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-7xl font-extrabold text-charcoal mb-6 uppercase tracking-tighter">Industry Insights</h1>
           <p className="text-lg text-gray-400 font-bold uppercase tracking-[0.3em]">Thoughts on Engineering, Construction & Innovation</p>

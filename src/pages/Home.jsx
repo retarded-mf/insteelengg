@@ -44,7 +44,7 @@ const Home = () => {
               </div>
 
               <Link to="/about" className="group inline-flex items-center space-x-6">
-                 <span className="text-charcoal font-black uppercase text-xs tracking-[0.4em]">Discover Our Journey</span>
+                 <span className="text-charcoal font-black uppercase text-xs tracking-[0.4em] group-hover:text-primary-red transition-colours duration-500">Discover Our Journey</span>
                  <span className="w-16 h-[2px] bg-charcoal group-hover:w-24 group-hover:bg-primary-red transition-all duration-500" />
               </Link>
             </div>
@@ -97,7 +97,6 @@ const Home = () => {
             >
               Explore Full Portfolio
               <span className="w-12 h-[2px] bg-charcoal group-hover:w-20 group-hover:bg-primary-red transition-all duration-500" />
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>

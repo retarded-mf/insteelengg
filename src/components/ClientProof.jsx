@@ -45,13 +45,11 @@ const ClientProof = () => {
             <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">
               Social Proof
             </span>
-            <h2 className="text-charcoal font-black text-5xl md:text-6xl uppercase tracking-tighter leading-none">
+            <h1 className="text-charcoal font-black text-5xl md:text-6xl uppercase tracking-tighter leading-none">
               Trusted by Partners
-            </h2>
+            </h1>
           </div>
-          <div className="max-w-xl text-gray-500 font-bold italic">
-            Select a partner to preview a representative client sentiment.
-          </div>
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-stretch">
@@ -63,11 +61,10 @@ const ClientProof = () => {
                   type="button"
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
-                  className={`h-20 border text-sm font-black uppercase tracking-[0.25em] transition-all ${
-                    active === i
-                      ? 'border-primary-red text-primary-red bg-primary-red/5'
-                      : 'border-gray-100 text-charcoal/60 hover:border-primary-red hover:text-primary-red'
-                  }`}
+                  className={`h-20 border text-sm font-black uppercase tracking-[0.25em] transition-all ${active === i
+                    ? 'border-primary-red text-primary-red bg-primary-red/5'
+                    : 'border-gray-100 text-charcoal/60 hover:border-primary-red hover:text-primary-red'
+                    }`}
                 >
                   {label}
                 </button>

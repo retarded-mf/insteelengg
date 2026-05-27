@@ -19,38 +19,70 @@ const Barricading = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="relative min-h-[85vh] flex items-end bg-charcoal overflow-hidden">
+      <section className="relative min-h-[85vh] flex items-center bg-charcoal overflow-hidden">
+        {/* Background */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=1920"
+            src="/src/assets/images/barricading/barricade5.png"
             alt="Steel barricade at construction site"
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-25"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/70 to-charcoal/40 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-charcoal/85 to-charcoal/40 z-10" />
           <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.6)] z-10" />
         </div>
 
-        <div className="relative z-20 max-w-[1440px] mx-auto px-6 lg:px-12 pb-24 pt-40 w-full">
-          <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-6 block">
-            For Developers & EPC Contractors
-          </span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tighter leading-[0.95] max-w-5xl mb-8">
-            Barricading is 0.1% of your project cost.
-            <span className="block text-primary-red mt-2">Non-compliance can stop 100% of your project.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-white/70 font-bold italic max-w-2xl mb-12 border-l-4 border-primary-red pl-8">
-            Plan compliant barricading before execution begins—avoid delays, penalties, and disruption.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link to="/contact" className="btn-red !px-12 !py-4">
-              Request Site Assessment
-            </Link>
-            <a
-              href="#products"
-              className="inline-flex items-center justify-center border-2 border-white/30 text-white px-10 py-4 font-black uppercase text-xs tracking-[0.2em] hover:border-primary-red hover:text-primary-red transition-colors"
-            >
-              View Specifications
-            </a>
+        <div className="relative z-20 max-w-[1440px] mx-auto px-6 lg:px-12 py-32 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+            {/* Left — Text */}
+            <div>
+              <span className="inline-flex items-center gap-2 text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-8 block">
+                <span className="w-2 h-2 rounded-full bg-primary-red inline-block" />
+                For Developers &amp; EPC Contractors
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-6">
+                Barricading is 0.1% of your project cost.
+                <span className="block text-primary-red mt-3">Non-compliance can stop 100% of your project.</span>
+              </h1>
+
+              {/* Product sizes line */}
+              <p className="text-white font-black text-lg uppercase tracking-tight mb-6">
+                We provide{' '}
+                <span className="text-primary-red">35 ft. (10.6m)</span>
+                {' '}and{' '}
+                <span className="text-primary-red">25 ft. (7.6m)</span>
+                {' '}Steel Barricades.
+              </p>
+
+              <p className="text-white/60 font-bold italic max-w-lg mb-12 border-l-4 border-primary-red pl-6 leading-relaxed">
+                Plan compliant barricading before execution begins—avoid delays, penalties, and disruption.
+              </p>
+
+              <div className="flex flex-wrap gap-4">
+                <Link to="/contact" className="btn-red !px-12 !py-4">
+                  Request Site Assessment
+                </Link>
+                <a
+                  href="#products"
+                  className="inline-flex items-center justify-center border-2 border-white/30 text-white px-10 py-4 font-black uppercase text-xs tracking-[0.2em] hover:border-primary-red hover:text-primary-red transition-colors"
+                >
+                  View Specifications
+                </a>
+              </div>
+            </div>
+
+            {/* Right — Floating image card */}
+            <div className="hidden lg:flex justify-end">
+              <div className="relative w-[500px] h-[650px] rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="/src/assets/images/barricading/barricade6.png"
+                  alt="Insteel barricading on site"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -83,6 +115,26 @@ const Barricading = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Products Spotlight */}
+      <section className="py-16 bg-white border-b border-gray-100">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+          <h2 className="text-primary-red font-black text-2xl uppercase tracking-[0.4em] mb-8">
+            Products Spotlight:
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+                <img
+                  src={`/src/assets/images/barricading/barricade${i}.png`}
+                  alt={`Barricading project ${i}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>

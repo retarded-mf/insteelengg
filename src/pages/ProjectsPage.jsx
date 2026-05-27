@@ -5,7 +5,7 @@ const ProjectsPage = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <section className="py-24 bg-charcoal">
+      <section className="pt-32 pb-24 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-end gap-8">
             <div className="max-w-2xl">

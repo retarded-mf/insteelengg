@@ -9,12 +9,11 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// Shared preview image size for What We Do + Projects dropdowns (edit here)
 const MEGA_PREVIEW_IMAGE = 'w-[400px] min-h-[300px]';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeMega, setActiveMega] = useState(null); // 'who-we-are', 'what-we-do', 'projects'
+  const [activeMega, setActiveMega] = useState(null);
   const [activeImage, setActiveImage] = useState("https://images.unsplash.com/photo-1541888941259-79273ceb0022?auto=format&fit=crop&q=80&w=800");
   const location = useLocation();
 
@@ -22,29 +21,42 @@ const Navbar = () => {
     { name: 'Who We Are', path: '/about', id: 'who-we-are' },
     { name: 'What We Do', path: '/what-we-do', id: 'what-we-do' },
     { name: 'Projects', path: '/projects', id: 'projects' },
+    { name: 'Company', path: '#', id: 'company' },
     { name: 'Blog', path: '/blog' },
   ];
 
   const whoWeAreMega = [
     { name: 'About Insteel', path: '/about', img: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800" },
-    { name: 'Events & News', path: '/blog', img: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=800" },
-    { name: 'The Team', path: '/about#team', img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800" },
-    { name: 'Awards & Recognition', path: '/about#awards', img: "https://images.unsplash.com/photo-1531050171651-61afc0821d71?auto=format&fit=crop&q=80&w=800" },
-    { name: 'Our Clients', path: '/about#clients', img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=800" },
+    { name: 'Events', path: '/events', img: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=800" },
+    { name: 'The Team', path: '/team', img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800" },
+    { name: 'Awards & Recognition', path: '/awards', img: "https://images.unsplash.com/photo-1531050171651-61afc0821d71?auto=format&fit=crop&q=80&w=800" },
+    { name: 'Our Clients', path: '/clients', img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=800" },
+  ];
+
+  const companyMega = [
+    { name: 'News', path: '/news' },
+    { name: 'Investor', path: '/investor' },
+    { name: 'Annual Report', path: '/annual-report' },
   ];
 
   const servicesMega = {
     engineering: [
-      { name: 'Structural Steel Design', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Structural Steel Design & Detailing', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=800" },
       { name: 'RCC Design', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&q=80&w=800" },
-      { name: 'BIM & Digital Twin', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800" },
-      { name: 'Connection Design', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Rebar Detailing & BBS', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Building Information Modelling (BIM)', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Connection Design', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800" },
+      { name: 'MEP Services', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Shop Drawing Generation', path: '/what-we-do?tab=engineering', img: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800" },
     ],
     construction: [
-      { name: 'Precision Fabrication', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800" },
-      { name: 'High-Rise Erection', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1531834357241-0322ba66024d?auto=format&fit=crop&q=80&w=800" },
-      { name: 'Fire Proofing', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1590644365607-1c5a519a7a37?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Fabrication', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Erection', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1531834357241-0322ba66024d?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Painting & Fire Proofing', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1590644365607-1c5a519a7a37?auto=format&fit=crop&q=80&w=800" },
       { name: 'Roofing & Cladding', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1513344605008-0133c948408f?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Civil Works for Composite Structures', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Solar System Installation', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800" },
+      { name: 'Technical Manpower Deputation', path: '/what-we-do?tab=construction', img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800" },
     ],
     others: [
       { name: 'Solar', path: '/what-we-do?tab=solar', img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800" },
@@ -75,22 +87,22 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center space-x-14 h-full ml-auto justify-end">
+        <div className="hidden lg:flex items-center space-x-8 h-full ml-auto justify-end">
           {navLinks.map((link) => (
             <div
               key={link.name}
               className={cn(
                 "h-full flex items-center",
-                (link.id === 'who-we-are' || link.id === 'what-we-do') && "relative"
+                (link.id === 'who-we-are' || link.id === 'what-we-do' || link.id === 'company') && "relative"
               )}
               onMouseEnter={() => link.id && setActiveMega(link.id)}
             >
               <Link
                 to={link.path}
                 className={cn(
-                  "text-[15px] font-black uppercase tracking-[0.22em] transition-colors flex items-center h-full",
+                  "text-[15px] font-black uppercase tracking-[0.1em] transition-colors flex items-center h-full",
                   location.pathname === link.path || (link.id === 'what-we-do' && (location.pathname === '/what-we-do' || location.pathname.startsWith('/products/')))
-                    ? "text-primary-red" 
+                    ? "text-primary-red"
                     : "text-charcoal hover:text-primary-red"
                 )}
               >
@@ -98,7 +110,7 @@ const Navbar = () => {
                 {link.id && <ChevronDown className={cn("ml-1 w-4 h-4 transition-transform", activeMega === link.id && "rotate-180")} />}
               </Link>
 
-              {/* Who We Are — anchored under this nav label only */}
+              {/* Who We Are dropdown */}
               {link.id === 'who-we-are' && activeMega === 'who-we-are' && (
                 <div
                   className="absolute top-full left-0 w-[300px] bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50 py-8 px-8"
@@ -121,7 +133,7 @@ const Navbar = () => {
                 </div>
               )}
 
-              {/* What We Do — centered under nav label (like Projects alignment) */}
+              {/* What We Do dropdown */}
               {link.id === 'what-we-do' && activeMega === 'what-we-do' && (
                 <div
                   className="absolute top-full left-1/2 -translate-x-1/2 flex items-stretch w-max bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50"
@@ -147,22 +159,56 @@ const Navbar = () => {
                       ))}
                     </div>
                   </div>
-                  <div className={cn('relative bg-black shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
-                    <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent" />
+                  <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
+                    <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700" />
+                  </div>
+                </div>
+              )}
+
+              {/* Company dropdown */}
+              {link.id === 'company' && activeMega === 'company' && (
+                <div
+                  className="absolute top-full left-0 w-[260px] bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50 py-8 px-8"
+                  onMouseEnter={() => setActiveMega('company')}
+                >
+                  <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-4">
+                    Company
+                  </h4>
+                  <div className="space-y-0">
+                    {companyMega.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           ))}
+
+          {/* Careers standalone link */}
+          <Link
+            to="/careers"
+            className={cn(
+              "text-[15px] font-black uppercase tracking-[0.1em] transition-colors",
+              location.pathname === '/careers' ? "text-primary-red" : "text-charcoal hover:text-primary-red"
+            )}
+          >
+            Careers
+          </Link>
+
           <Link to="/contact" className="btn-quote !text-[13px]">
             <span>Contact Us</span>
           </Link>
         </div>
 
-        {/* Projects mega menu — right-aligned under nav area */}
+        {/* Projects mega menu */}
         {activeMega === 'projects' && (
-          <div 
+          <div
             className="absolute top-[128px] right-6 lg:right-12 flex items-stretch w-max bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50"
             onMouseEnter={() => setActiveMega('projects')}
           >
@@ -174,9 +220,8 @@ const Navbar = () => {
                 ))}
               </div>
             </div>
-            <div className={cn('relative bg-black shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
-              <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent" />
+            <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
+              <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700" />
             </div>
           </div>
         )}
@@ -198,6 +243,9 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            <Link to="/careers" className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
+              Careers
+            </Link>
             <Link to="/contact" className="btn-quote w-full mt-8" onClick={() => setIsOpen(false)}>
               <span>Contact Us</span>
             </Link>
