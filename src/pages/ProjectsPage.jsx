@@ -5,16 +5,22 @@ const ProjectsPage = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <section className="pt-32 pb-24 bg-charcoal">
+      <section className="pt-48 pb-24 bg-charcoal text-center">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8">
-            <div className="max-w-2xl">
-              <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 uppercase tracking-tighter">Our Work</h1>
-              <p className="text-xl text-gray-400 font-medium">A showcase of engineering precision and large-scale EPC execution across diverse infrastructure sectors.</p>
-            </div>
-            <div className="bg-primary-red px-8 py-6 text-white hidden lg:block">
-              <div className="text-4xl font-black">500+</div>
-              <div className="text-xs font-bold uppercase tracking-widest opacity-80">Projects Delivered</div>
+          <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">
+            Our Portfolio
+          </span>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 uppercase tracking-tighter">
+            Our Work
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto font-medium mb-8">
+            A showcase of engineering precision and large-scale EPC execution across diverse infrastructure sectors.
+          </p>
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-3 rounded">
+              <span className="text-2xl font-black text-primary-red">500+</span>
+              <span className="w-[1px] h-4 bg-white/20" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">Projects Delivered</span>
             </div>
           </div>
         </div>
