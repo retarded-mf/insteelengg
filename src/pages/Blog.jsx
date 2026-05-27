@@ -1,24 +1,27 @@
 import React from 'react';
 import { ArrowRight, Calendar, User } from 'lucide-react';
+import { EditText, EditImage } from '../components/Editable';
 
-const BlogPost = ({ title, category, date, excerpt, img }) => (
+const BlogPost = ({ index, title, category, date, excerpt, img }) => (
   <div className="group bg-white border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-on-scroll">
     <div className="h-64 overflow-hidden relative">
-      <img src={img} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-      <div className="absolute top-4 left-4">
+      <EditImage id={`blog_post_${index}_image`} defaultUrl={img} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+      <div className="absolute top-4 left-4 z-20">
         <span className="bg-primary-red text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1">
-          {category}
+          <EditText id={`blog_post_${index}_category`} defaultValue={category} />
         </span>
       </div>
     </div>
     <div className="p-8">
       <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 space-x-4">
-        <span className="flex items-center"><Calendar size={14} className="mr-1.5" /> {date}</span>
+        <span className="flex items-center"><Calendar size={14} className="mr-1.5" /> <EditText id={`blog_post_${index}_date`} defaultValue={date} /></span>
         <span className="flex items-center"><User size={14} className="mr-1.5" /> Admin</span>
       </div>
-      <h3 className="text-2xl font-extrabold text-charcoal mb-4 line-clamp-2 hover:text-primary-red transition-colors cursor-pointer uppercase">{title}</h3>
+      <h3 className="text-2xl font-extrabold text-charcoal mb-4 line-clamp-2 hover:text-primary-red transition-colors cursor-pointer uppercase">
+        <EditText id={`blog_post_${index}_title`} defaultValue={title} />
+      </h3>
       <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 italic">
-        {excerpt}
+        <EditText id={`blog_post_${index}_excerpt`} defaultValue={excerpt} isTextArea={true} />
       </p>
       <button className="flex items-center text-primary-red font-bold uppercase tracking-widest text-xs group/link">
         Read More <ArrowRight size={16} className="ml-2 group-hover/link:translate-x-2 transition-transform" />
@@ -57,8 +60,12 @@ const Blog = () => {
       {/* Header */}
       <section className="pt-48 pb-24 bg-blue-grey border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-charcoal mb-6 uppercase tracking-tighter">Industry Insights</h1>
-          <p className="text-lg text-gray-400 font-bold uppercase tracking-[0.3em]">Thoughts on Engineering, Construction & Innovation</p>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-charcoal mb-6 uppercase tracking-tighter">
+            <EditText id="blog_header_title" defaultValue="Industry Insights" />
+          </h1>
+          <p className="text-lg text-gray-400 font-bold uppercase tracking-[0.3em]">
+            <EditText id="blog_header_slogan" defaultValue="Thoughts on Engineering, Construction & Innovation" />
+          </p>
         </div>
       </section>
 
@@ -66,7 +73,7 @@ const Blog = () => {
       <section className="py-24 max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {posts.map((post, i) => (
-            <BlogPost key={i} {...post} />
+            <BlogPost key={i} index={i} {...post} />
           ))}
         </div>
         

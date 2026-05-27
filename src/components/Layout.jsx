@@ -1,10 +1,22 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { useAdmin } from '../context/AdminContext';
 
 const Layout = ({ children }) => {
+  const { pathname } = useLocation();
+  const { isAdminActive } = useAdmin();
+  
+  // Bypass standard layout only when on the login screen at /admin (unauthenticated)
+  const isLoginScreen = pathname === '/admin' && !isAdminActive;
+
+  if (isLoginScreen) {
+    return <div className="min-h-screen bg-charcoal flex flex-col">{children}</div>;
+  }
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className={`flex flex-col min-h-screen transition-all duration-300 ${isAdminActive ? 'pt-[52px]' : 'pt-0'}`}>
       <Navbar />
       <main className="flex-grow">
         {children}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Shield } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { EditText, EditImage } from '../components/Editable';
 import {
   regulatoryPoints,
   delayStats,
@@ -22,8 +23,9 @@ const Barricading = () => {
       <section className="relative min-h-[85vh] flex items-center bg-charcoal overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="/src/assets/images/barricading/barricade5.png"
+          <EditImage
+            id="barricading_hero_bg"
+            defaultUrl="/src/assets/images/barricading/barricade5.png"
             alt="Steel barricade at construction site"
             className="w-full h-full object-cover opacity-25"
           />
@@ -38,24 +40,30 @@ const Barricading = () => {
             <div>
               <span className="inline-flex items-center gap-2 text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-8 block">
                 <span className="w-2 h-2 rounded-full bg-primary-red inline-block" />
-                For Developers &amp; EPC Contractors
+                <EditText id="barricading_hero_tag" defaultValue="For Developers & EPC Contractors" />
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-6">
-                Barricading is 0.1% of your project cost.
-                <span className="block text-primary-red mt-3">Non-compliance can stop 100% of your project.</span>
+                <EditText id="barricading_hero_h1_main" defaultValue="Barricading is 0.1% of your project cost." />
+                <span className="block text-primary-red mt-3">
+                  <EditText id="barricading_hero_h1_sub" defaultValue="Non-compliance can stop 100% of your project." />
+                </span>
               </h1>
 
               {/* Product sizes line */}
               <p className="text-white font-black text-lg uppercase tracking-tight mb-6">
                 We provide{' '}
-                <span className="text-primary-red">35 ft. (10.6m)</span>
+                <span className="text-primary-red">
+                  <EditText id="barricading_hero_size_1" defaultValue="35 ft. (10.6m)" />
+                </span>
                 {' '}and{' '}
-                <span className="text-primary-red">25 ft. (7.6m)</span>
+                <span className="text-primary-red">
+                  <EditText id="barricading_hero_size_2" defaultValue="25 ft. (7.6m)" />
+                </span>
                 {' '}Steel Barricades.
               </p>
 
               <p className="text-white/60 font-bold italic max-w-lg mb-12 border-l-4 border-primary-red pl-6 leading-relaxed">
-                Plan compliant barricading before execution begins—avoid delays, penalties, and disruption.
+                <EditText id="barricading_hero_body" defaultValue="Plan compliant barricading before execution begins—avoid delays, penalties, and disruption." isTextArea={true} />
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -74,8 +82,9 @@ const Barricading = () => {
             {/* Right — Floating image card */}
             <div className="hidden lg:flex justify-end">
               <div className="relative w-[500px] h-[650px] rounded-2xl overflow-hidden shadow-2xl">
-                <img
-                  src="/src/assets/images/barricading/barricade6.png"
+                <EditImage
+                  id="barricading_hero_side_img"
+                  defaultUrl="/src/assets/images/barricading/barricade6.png"
                   alt="Insteel barricading on site"
                   className="w-full h-full object-cover"
                 />

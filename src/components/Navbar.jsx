@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import Logo from './Logo';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useAdmin } from '../context/AdminContext';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -73,16 +74,46 @@ const Navbar = () => {
     { name: 'Special Structures', path: '/projects?cat=Special%20Structures', img: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=800" },
   ];
 
+  const { isAdminActive } = useAdmin();
+
+  // Helper to dynamically keep authenticated admins inside /admin workspace routing
+  const getNavPath = (originalPath) => {
+    if (!isAdminActive) return originalPath;
+    if (originalPath === '/') return '/admin?tab=home';
+    
+    if (originalPath.startsWith('/what-we-do')) {
+      const parts = originalPath.split('?');
+      const search = parts[1] ? `&${parts[1]}` : '';
+      return `/admin?tab=what-we-do${search}`;
+    }
+    if (originalPath.startsWith('/projects')) {
+      const parts = originalPath.split('?');
+      const search = parts[1] ? `&${parts[1]}` : '';
+      return `/admin?tab=projects${search}`;
+    }
+    if (originalPath.startsWith('/products/barricading')) {
+      return '/admin?tab=barricading';
+    }
+    const cleanPath = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
+    return `/admin?tab=${cleanPath}`;
+  };
+
   useEffect(() => {
     setIsOpen(false);
     setActiveMega(null);
   }, [location]);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white z-50 border-b border-gray-100" onMouseLeave={() => setActiveMega(null)}>
+    <nav
+      className={cn(
+        "fixed left-0 w-full bg-white z-50 border-b border-gray-100 transition-all duration-300",
+        isAdminActive ? "top-[52px]" : "top-0"
+      )}
+      onMouseLeave={() => setActiveMega(null)}
+    >
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative h-32 flex items-center">
         {/* Logo */}
-        <Link to="/" className="flex-shrink-0" onMouseEnter={() => setActiveMega(null)}>
+        <Link to={getNavPath("/")} className="flex-shrink-0" onMouseEnter={() => setActiveMega(null)}>
           <Logo className="scale-[1.35] origin-left" />
         </Link>
 
@@ -98,7 +129,7 @@ const Navbar = () => {
               onMouseEnter={() => link.id && setActiveMega(link.id)}
             >
               <Link
-                to={link.path}
+                to={getNavPath(link.path)}
                 className={cn(
                   "text-[15px] font-black uppercase tracking-[0.1em] transition-colors flex items-center h-full",
                   location.pathname === link.path || (link.id === 'what-we-do' && (location.pathname === '/what-we-do' || location.pathname.startsWith('/products/')))
@@ -123,7 +154,7 @@ const Navbar = () => {
                     {whoWeAreMega.map((s) => (
                       <Link
                         key={s.name}
-                        to={s.path}
+                        to={getNavPath(s.path)}
                         className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5"
                       >
                         {s.name}
@@ -143,19 +174,19 @@ const Navbar = () => {
                     <div className="space-y-1 text-left w-[200px]">
                       <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Engineering</h4>
                       {servicesMega.engineering.map((s) => (
-                        <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
                       ))}
                     </div>
                     <div className="space-y-1 text-left w-[200px]">
                       <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Construction</h4>
                       {servicesMega.construction.map((s) => (
-                        <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
                       ))}
                     </div>
                     <div className="space-y-1 text-left w-[180px]">
                       <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Divisions</h4>
                       {servicesMega.others.map((s) => (
-                        <Link key={s.name} to={s.path} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
                       ))}
                     </div>
                   </div>
@@ -178,7 +209,7 @@ const Navbar = () => {
                     {companyMega.map((item) => (
                       <Link
                         key={item.name}
-                        to={item.path}
+                        to={getNavPath(item.path)}
                         className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5"
                       >
                         {item.name}
@@ -192,7 +223,7 @@ const Navbar = () => {
 
           {/* Careers standalone link */}
           <Link
-            to="/careers"
+            to={getNavPath("/careers")}
             className={cn(
               "text-[15px] font-black uppercase tracking-[0.1em] transition-colors",
               location.pathname === '/careers' ? "text-primary-red" : "text-charcoal hover:text-primary-red"
@@ -201,7 +232,7 @@ const Navbar = () => {
             Careers
           </Link>
 
-          <Link to="/contact" className="btn-quote !text-[13px]">
+          <Link to={getNavPath("/contact")} className="btn-quote !text-[13px]">
             <span>Contact Us</span>
           </Link>
         </div>
@@ -216,7 +247,7 @@ const Navbar = () => {
               <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Landmark EPC Projects</h4>
               <div className="grid grid-cols-1">
                 {projectsMega.map((p) => (
-                  <Link key={p.name} to={p.path} onMouseEnter={() => setActiveImage(p.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
+                  <Link key={p.name} to={getNavPath(p.path)} onMouseEnter={() => setActiveImage(p.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
                 ))}
               </div>
             </div>
@@ -239,14 +270,14 @@ const Navbar = () => {
         <div className="lg:hidden bg-white border-b border-gray-100 animate-in fade-in slide-in-from-top-4">
           <div className="px-6 pt-4 pb-12 space-y-2">
             {navLinks.map((link) => (
-              <Link key={link.name} to={link.path} className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
+              <Link key={link.name} to={getNavPath(link.path)} className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
                 {link.name}
               </Link>
             ))}
-            <Link to="/careers" className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
+            <Link to={getNavPath("/careers")} className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
               Careers
             </Link>
-            <Link to="/contact" className="btn-quote w-full mt-8" onClick={() => setIsOpen(false)}>
+            <Link to={getNavPath("/contact")} className="btn-quote w-full mt-8" onClick={() => setIsOpen(false)}>
               <span>Contact Us</span>
             </Link>
           </div>

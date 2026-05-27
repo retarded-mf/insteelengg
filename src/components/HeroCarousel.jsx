@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { EditText, EditImage } from './Editable';
+import { useAdmin } from '../context/AdminContext';
 
 const slides = [
   {
@@ -55,27 +57,30 @@ const slides = [
 
 const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
+  const { isAdminActive } = useAdmin();
+  const [isPaused, setIsPaused] = useState(false);
 
   const next = () => setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   const prev = () => setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
   useEffect(() => {
+    if (isPaused) return;
     const timer = setInterval(next, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused]);
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-charcoal">
 
       {/* ── Universal Brand Statement — clears the h-32 fixed navbar ── */}
       <div className="absolute top-0 left-0 right-0 z-30 flex flex-col items-center pt-48 pointer-events-none px-6 text-center">
-        <p className="text-white font-black text-[9px] md:text-[10px] uppercase tracking-[0.6em] opacity-65 mb-1.5">
-          India's Structural Steel EPC Partner
+        <p className="text-white font-black text-[9px] md:text-[10px] uppercase tracking-[0.6em] opacity-65 mb-1.5 pointer-events-auto">
+          <EditText id="hero_brand_tagline" defaultValue="India's Structural Steel EPC Partner" />
         </p>
-        <div className="flex items-center gap-3 justify-center">
+        <div className="flex items-center gap-3 justify-center pointer-events-auto">
           <span className="w-6 h-[1px] bg-primary-red/80" />
           <p className="text-white font-black text-xs md:text-sm lg:text-base uppercase tracking-[0.2em] drop-shadow-md">
-            Every Project. On Time. Without Compromise.
+            <EditText id="hero_brand_statement" defaultValue="Every Project. On Time. Without Compromise." />
           </p>
           <span className="w-6 h-[1px] bg-primary-red/80" />
         </div>
@@ -92,8 +97,9 @@ const HeroCarousel = () => {
           <div className="absolute inset-0 bg-black/10 z-10" />
 
           {/* Image */}
-          <img
-            src={slide.image}
+          <EditImage
+            id={`hero_slide_${index}_image`}
+            defaultUrl={slide.image}
             alt={slide.title}
             style={{ objectPosition: slide.objectPosition || 'center' }}
             className={`h-full w-full object-cover transition-transform duration-[10000ms] ease-linear ${index === current && !slide.noZoom ? 'scale-110' : 'scale-100'}`}
@@ -104,10 +110,10 @@ const HeroCarousel = () => {
             {/* Main slide text — left-anchored and vertically centered */}
             <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
               <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4">
-                {slide.category}
+                <EditText id={`hero_slide_${index}_category`} defaultValue={slide.category} />
               </h3>
               <h2 className="text-5xl md:text-8xl font-black text-white mb-10 leading-none uppercase tracking-tighter drop-shadow-2xl">
-                {slide.title}
+                <EditText id={`hero_slide_${index}_title`} defaultValue={slide.title} />
               </h2>
               <Link to={slide.link} className="group inline-flex items-center space-x-4">
                 <span className="w-12 h-[2px] bg-white group-hover:w-20 group-hover:bg-primary-red group-hover:translate-x-2 transition-all duration-500" />
@@ -120,7 +126,7 @@ const HeroCarousel = () => {
           {slide.statement && (
             <div className="absolute bottom-12 left-0 right-0 z-30 text-center animate-in fade-in duration-1000 delay-500">
               <span className="inline-block border-t border-white/20 pt-4 text-white/70 font-black text-[10px] md:text-xs uppercase tracking-[0.4em]">
-                {slide.statement}
+                <EditText id={`hero_slide_${index}_statement`} defaultValue={slide.statement} />
               </span>
             </div>
           )}
@@ -146,8 +152,20 @@ const HeroCarousel = () => {
       </button>
 
       {/* Slide counter — bottom right */}
-      <div className="absolute bottom-6 right-12 z-30 text-white/40 font-black text-xs uppercase tracking-widest">
-        {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
+      <div className="absolute bottom-6 right-12 z-30 text-white/40 font-black text-xs uppercase tracking-widest flex items-center gap-4 select-none">
+        {isAdminActive && (
+          <button
+            type="button"
+            onClick={() => setIsPaused(!isPaused)}
+            className="p-2 bg-black/40 hover:bg-black/60 rounded border border-white/10 hover:border-primary-red transition-all text-white flex items-center justify-center pointer-events-auto"
+            title={isPaused ? "Play Carousel" : "Pause Carousel"}
+          >
+            {isPaused ? <Play size={10} fill="white" /> : <Pause size={10} fill="white" />}
+          </button>
+        )}
+        <span>
+          {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
+        </span>
       </div>
 
       {/* Progress Segments — inset from edges, one per slide */}

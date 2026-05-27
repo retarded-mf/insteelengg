@@ -1,5 +1,6 @@
 import React from 'react';
 import StatCounter from './StatCtr';
+import { EditText } from './Editable';
 
 const boldClaims = [
   {
@@ -27,27 +28,27 @@ const WhyInsteel = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-start">
           <div className="lg:col-span-4 reveal-on-scroll">
             <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-6 block">
-              Why Trust Insteel
+              <EditText id="whyinsteel_tagline" defaultValue="Why Trust Insteel" />
             </span>
             <h2 className="text-charcoal font-black text-6xl md:text-7xl uppercase tracking-tighter leading-[0.95]">
-              Built to Deliver
+              <EditText id="whyinsteel_header" defaultValue="Built to Deliver" />
             </h2>
             <p className="mt-8 text-xl text-gray-500 leading-relaxed font-bold italic border-l-4 border-white/60 pl-10 max-w-xl">
-              Not bullet points—commitments we stake our reputation on across construction, solar, and barricading.
+              <EditText id="whyinsteel_body" defaultValue="Not bullet points—commitments we stake our reputation on across construction, solar, and barricading." isTextArea={true} />
             </p>
           </div>
 
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5 reveal-on-scroll">
-            {boldClaims.map((claim) => (
+            {boldClaims.map((claim, idx) => (
               <div
-                key={claim.headline}
+                key={idx}
                 className="bg-charcoal text-white p-8 md:p-10 group hover:bg-primary-red transition-colors duration-500"
               >
                 <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter leading-none group-hover:text-white">
-                  {claim.headline}
+                  <EditText id={`whyinsteel_claim_${idx}_headline`} defaultValue={claim.headline} />
                 </h3>
                 <p className="mt-4 text-[11px] md:text-xs font-black uppercase tracking-[0.25em] text-white/50 group-hover:text-white/80 transition-colors">
-                  {claim.sub}
+                  <EditText id={`whyinsteel_claim_${idx}_sub`} defaultValue={claim.sub} />
                 </p>
               </div>
             ))}
