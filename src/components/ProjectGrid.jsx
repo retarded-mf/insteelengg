@@ -353,10 +353,12 @@ const ProjectGrid = () => {
         ))}
       </div>
 
-      {/* Grid: 2 columns on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Centered Portfolio Layout — ensures single/odd cards center perfectly */}
+      <div className="flex flex-wrap gap-8 justify-center">
         {filteredProjects.map((project) => (
-          <FlipCard key={project.id} project={project} onViewMore={handleViewMore} />
+          <div key={project.id} className="w-full lg:w-[calc(50%-16px)] max-w-[580px]">
+            <FlipCard project={project} onViewMore={handleViewMore} />
+          </div>
         ))}
       </div>
 
