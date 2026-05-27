@@ -5,7 +5,7 @@ const Contact = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <section className="pt-32 pb-24 bg-charcoal">
+      <section className="pt-48 pb-24 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 uppercase tracking-tighter">Get In Touch</h1>
           <p className="text-xl text-primary-red font-bold uppercase tracking-[0.3em]">Let's Build Something Landmark Together</p>

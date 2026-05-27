@@ -13,7 +13,7 @@ const TheTeam = () => {
   return (
     <div className="bg-white">
       {/* Header */}
-      <section className="pt-32 pb-24 bg-charcoal text-center">
+      <section className="pt-48 pb-24 bg-charcoal text-center">
         <div className="max-w-7xl mx-auto px-4">
           <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">People</span>
           <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 uppercase tracking-tighter">The Team</h1>

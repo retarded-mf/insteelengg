@@ -4,7 +4,7 @@ const Events = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <section className="pt-32 pb-24 bg-blue-grey border-b border-gray-100">
+      <section className="pt-48 pb-24 bg-blue-grey border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">
             Milestones &amp; Presence
