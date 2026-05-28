@@ -1,57 +1,97 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AdminContext = createContext(null);
 
 export const AdminProvider = ({ children }) => {
-  const [isAdminActive, setIsAdminActive] = useState(() => {
-    return sessionStorage.getItem('isAdminActive') === 'true';
-  });
+  const [session, setSession] = useState(undefined); // undefined = loading
+  const [contentCache, setContentCache] = useState({}); // id → url/value
+  const [contentLoading, setContentLoading] = useState(true);
 
-  const [siteContent, setSiteContent] = useState(() => {
-    const saved = localStorage.getItem('insteelSiteContent');
-    return saved ? JSON.parse(saved) : {};
-  });
-
-  // Sync site content edits to localStorage
+  // ── Auth: listen for session changes ─────────────────────────
   useEffect(() => {
-    localStorage.setItem('insteelSiteContent', JSON.stringify(siteContent));
-  }, [siteContent]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
-  const login = (username, password) => {
-    if (username === 'admin' && password === 'insteel2026') {
-      setIsAdminActive(true);
-      sessionStorage.setItem('isAdminActive', 'true');
-      return true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ── Content: fetch all published rows into cache on mount ─────
+  useEffect(() => {
+    const fetchContent = async () => {
+      setContentLoading(true);
+      const { data, error } = await supabase
+        .from('content')
+        .select('id, url, position')
+        .eq('status', 'published');
+
+      if (!error && data) {
+        const cache = {};
+        data.forEach(row => {
+          cache[row.id] = row.url;
+          if (row.position) cache[row.id + '_position'] = row.position;
+        });
+        setContentCache(cache);
+      }
+      setContentLoading(false);
+    };
+
+    fetchContent();
+  }, []);
+
+  // ── Derived: isAdminActive ────────────────────────────────────
+  const isAdminActive = !!session;
+
+  // ── Auth Actions ──────────────────────────────────────────────
+  const login = async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return !error; // true = success
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // ── Content Actions ───────────────────────────────────────────
+  const getContent = useCallback((id, defaultValue) => {
+    return contentCache[id] !== undefined ? contentCache[id] : defaultValue;
+  }, [contentCache]);
+
+  const setContent = useCallback(async (id, value) => {
+    // 1. Update cache immediately (UI feels instant)
+    setContentCache(prev => ({ ...prev, [id]: value }));
+
+    // 2. Persist to Supabase in background
+    const isPosition = id.endsWith('_position');
+    const baseId = isPosition ? id.replace('_position', '') : id;
+
+    if (isPosition) {
+      await supabase.from('content').upsert({ id: baseId, position: value }, { onConflict: 'id' });
+    } else {
+      await supabase.from('content').upsert(
+        { id, url: value, status: 'published' },
+        { onConflict: 'id' }
+      );
     }
-    return false;
-  };
+  }, []);
 
-  const logout = () => {
-    setIsAdminActive(false);
-    sessionStorage.removeItem('isAdminActive');
-  };
-
-  const getContent = (key, defaultValue) => {
-    return siteContent[key] !== undefined ? siteContent[key] : defaultValue;
-  };
-
-  const setContent = (key, value) => {
-    setSiteContent((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  const resetAllContent = () => {
-    setSiteContent({});
-    localStorage.removeItem('insteelSiteContent');
+  const resetAllContent = async () => {
+    setContentCache({});
+    // Soft reset: mark all as 'default' — or delete if preferred
+    // For now we just clear the local cache; data stays in DB
   };
 
   return (
     <AdminContext.Provider
       value={{
         isAdminActive,
-        siteContent,
+        session,
+        contentLoading,
         login,
         logout,
         getContent,

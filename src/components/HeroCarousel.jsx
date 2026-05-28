@@ -3,62 +3,45 @@ import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { EditText, EditImage } from './Editable';
 import { useAdmin } from '../context/AdminContext';
+import { supabase } from '../lib/supabase';
 
-const slides = [
-  {
-    category: "Railway Stations",
-    title: "Gandhinagar Railway Station",
-    image: "https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&q=80&w=1920",
-    link: "/projects",
-    objectPosition: "center 20%",
-    statement: "On time, On spec. No exceptions.",
-  },
-  {
-    category: "High-Rise Steel Buildings",
-    title: "Pune - Nyati Plaza",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1920",
-    link: "/projects",
-    objectPosition: "center",
-    statement: "From drawing to delivery — one team.",
-  },
-  {
-    category: "Special Structures",
-    title: "Center of Excellence, Ahemdabad",
-    image: "/src/assets/images/projects/composite/composite_coe-1.jpg",
-    link: "/projects",
-    objectPosition: "top",
-    statement: "Research-led, Precision-built.",
-  },
-  {
-    category: "High-Rise Steel Buildings",
-    title: "TCS Sahyadri Park, Mumbai",
-    image: "https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=1920",
-    link: "/projects",
-    objectPosition: "center",
-    statement: "Large-scale steel, Delivered without compromise.",
-  },
-  {
-    category: "Airports",
-    title: "Lucknow Airport",
-    image: "https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=1920",
-    link: "/projects",
-    objectPosition: "center 30%",
-    statement: "Complex structures, Seamless execution.",
-  },
-  {
-    category: "Connecting Bridges",
-    title: "Godrej Play Bridge, Mumbai",
-    image: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=1920",
-    link: "/projects",
-    objectPosition: "center 40%",
-    statement: "Engineering beyond the blueprint.",
-  },
+const DEFAULT_SLIDES = [
+  { id: 'hero_slide_0', image: 'https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&q=80&w=1920', objectPosition: 'center 20%', link: '/projects' },
+  { id: 'hero_slide_1', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1920', objectPosition: 'center', link: '/projects' },
+  { id: 'hero_slide_2', image: '/src/assets/images/projects/composite/composite_coe-1.jpg', objectPosition: 'top', link: '/projects' },
+  { id: 'hero_slide_3', image: 'https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=1920', objectPosition: 'center', link: '/projects' },
+  { id: 'hero_slide_4', image: 'https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=1920', objectPosition: 'center 30%', link: '/projects' },
+  { id: 'hero_slide_5', image: 'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=1920', objectPosition: 'center 40%', link: '/projects' },
 ];
 
 const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
-  const { isAdminActive } = useAdmin();
+  const { isAdminActive, getContent } = useAdmin();
   const [isPaused, setIsPaused] = useState(false);
+  const [slides, setSlides] = useState(DEFAULT_SLIDES);
+
+  // Fetch slide image rows from Supabase, build slides list
+  useEffect(() => {
+    const fetchSlides = async () => {
+      const { data } = await supabase
+        .from('content')
+        .select('id, url, position, sequence')
+        .eq('pagename', 'home')
+        .eq('sectionno', 1)
+        .eq('type', 'image')
+        .order('sequence');
+
+      if (data && data.length > 0) {
+        setSlides(data.map(row => ({
+          id: row.id.replace('_img', ''),
+          image: row.url,
+          objectPosition: row.position || 'center',
+          link: '/projects',
+        })));
+      }
+    };
+    fetchSlides();
+  }, []);
 
   const next = () => setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   const prev = () => setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
@@ -80,7 +63,7 @@ const HeroCarousel = () => {
         <div className="flex items-center gap-3 justify-center pointer-events-auto">
           <span className="w-6 h-[1px] bg-primary-red/80" />
           <p className="text-white font-black text-xs md:text-sm lg:text-base uppercase tracking-[0.2em] drop-shadow-md">
-            <EditText id="hero_brand_statement" defaultValue="Every Project. On Time. Without Compromise." />
+            <EditText id="hero_brand_statement" defaultValue="Every Project, On Time, Without Compromise." />
           </p>
           <span className="w-6 h-[1px] bg-primary-red/80" />
         </div>
@@ -98,9 +81,9 @@ const HeroCarousel = () => {
 
           {/* Image */}
           <EditImage
-            id={`hero_slide_${index}_image`}
+            id={`${slide.id}_img`}
             defaultUrl={slide.image}
-            alt={slide.title}
+            alt={slide.title || ''}
             style={{ objectPosition: slide.objectPosition || 'center' }}
             className={`h-full w-full object-cover transition-transform duration-[10000ms] ease-linear ${index === current && !slide.noZoom ? 'scale-110' : 'scale-100'}`}
           />
@@ -110,10 +93,10 @@ const HeroCarousel = () => {
             {/* Main slide text — left-anchored and vertically centered */}
             <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
               <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4">
-                <EditText id={`hero_slide_${index}_category`} defaultValue={slide.category} />
+                <EditText id={`${slide.id}_category`} defaultValue={slide.category || ''} />
               </h3>
               <h2 className="text-5xl md:text-8xl font-black text-white mb-10 leading-none uppercase tracking-tighter drop-shadow-2xl">
-                <EditText id={`hero_slide_${index}_title`} defaultValue={slide.title} />
+                <EditText id={`${slide.id}_title`} defaultValue={slide.title || ''} />
               </h2>
               <Link to={slide.link} className="group inline-flex items-center space-x-4">
                 <span className="w-12 h-[2px] bg-white group-hover:w-20 group-hover:bg-primary-red group-hover:translate-x-2 transition-all duration-500" />
@@ -123,13 +106,11 @@ const HeroCarousel = () => {
           </div>
 
           {/* Per-slide statement — absolutely positioned at bottom center */}
-          {slide.statement && (
-            <div className="absolute bottom-12 left-0 right-0 z-30 text-center animate-in fade-in duration-1000 delay-500">
-              <span className="inline-block border-t border-white/20 pt-4 text-white/70 font-black text-[10px] md:text-xs uppercase tracking-[0.4em]">
-                <EditText id={`hero_slide_${index}_statement`} defaultValue={slide.statement} />
-              </span>
-            </div>
-          )}
+          <div className="absolute bottom-12 left-0 right-0 z-30 text-center animate-in fade-in duration-1000 delay-500">
+            <span className="inline-block border-t border-white/20 pt-4 text-white/70 font-black text-[10px] md:text-xs uppercase tracking-[0.4em]">
+              <EditText id={`${slide.id}_statement`} defaultValue={slide.statement || ''} />
+            </span>
+          </div>
         </div>
       ))}
 

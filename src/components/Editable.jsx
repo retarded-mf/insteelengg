@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import { Edit3, Camera, Save, X, Image as ImageIcon, UploadCloud } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Edit3, Camera, Save, X, Image as ImageIcon, UploadCloud, Loader2 } from 'lucide-react';
 
 /* ─── Inline Editable Text Component ──────────────────────── */
 export const EditText = ({ id, defaultValue, className = '', isTextArea = false }) => {
@@ -96,8 +97,9 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newUrl, setNewUrl] = useState('');
   const [newPosition, setNewPosition] = useState('center');
-  const [uploadTab, setUploadTab] = useState('upload'); // 'upload' or 'url'
+  const [uploadTab, setUploadTab] = useState('upload');
   const [hasError, setHasError] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const imageUrl = getContent(id, defaultUrl);
   const imagePosition = getContent(id + '_position', style.objectPosition || 'center');
@@ -113,21 +115,28 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
     setHasError(false);
   }, [newUrl]);
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validate file size (under 2MB to keep localStorage responsive)
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Image size is too large (limit: 2MB). Please select a compressed/optimized image file.");
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewUrl(reader.result); // Sync base64 dataURL
-      };
-      reader.readAsDataURL(file);
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${id}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('site-assets')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('Upload failed:', uploadError.message);
+      alert('Image upload failed. Please try again.');
+      setUploading(false);
+      return;
     }
+
+    const { data } = supabase.storage.from('site-assets').getPublicUrl(filePath);
+    setNewUrl(data.publicUrl);
+    setUploading(false);
   };
 
   const handleSave = (e) => {
@@ -252,15 +261,25 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
                     </label>
                     <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 hover:border-primary-red/50 bg-gray-50 rounded-lg cursor-pointer transition-all hover:bg-gray-100/50">
                       <div className="flex flex-col items-center justify-center pt-4 pb-4">
-                        <UploadCloud size={24} className="text-gray-400 mb-1 transition-colors" />
-                        <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Click to browse file</p>
-                        <p className="text-[9px] text-gray-300 mt-0.5">PNG, JPG, SVG or WEBP (Max 2MB)</p>
+                        {uploading ? (
+                          <>
+                            <Loader2 size={24} className="text-primary-red mb-1 animate-spin" />
+                            <p className="text-[11px] text-primary-red font-bold uppercase tracking-wider">Uploading...</p>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud size={24} className="text-gray-400 mb-1 transition-colors" />
+                            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Click to browse file</p>
+                            <p className="text-[9px] text-gray-300 mt-0.5">PNG, JPG, SVG or WEBP</p>
+                          </>
+                        )}
                       </div>
                       <input
                         type="file"
                         accept="image/*"
                         className="hidden"
                         onChange={handleFileUpload}
+                        disabled={uploading}
                       />
                     </label>
                   </div>

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { X, Globe, Calendar, Weight, Settings } from 'lucide-react';
-import { projects, categories } from '../data/projects';
+import { projects as DEFAULT_PROJECTS, categories } from '../data/projects';
+import { supabase } from '../lib/supabase';
 
 /* ─── Premium Interactive Project Modal ────────────────────── */
 const ProjectModal = ({ project, onClose }) => {
@@ -285,6 +286,46 @@ const ProjectGrid = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState('All');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
+
+  // Fetch projects from Supabase
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data: imgRows } = await supabase
+        .from('content')
+        .select('id, url, position, sequence')
+        .eq('pagename', 'projects')
+        .eq('type', 'card')
+        .eq('status', 'published')
+        .order('sequence');
+
+      if (!imgRows || imgRows.length === 0) return;
+
+      // Fetch all sibling text rows in one query
+      const textIds = imgRows.flatMap(r => {
+        const base = r.id.replace('_img', '');
+        return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
+      });
+      const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+      const textMap = {};
+      (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+
+      const built = imgRows.map((row, i) => {
+        const base = row.id.replace('_img', '');
+        return {
+          id: i + 1,
+          name: textMap[`${base}_name`] || '',
+          location: textMap[`${base}_location`] || '',
+          category: textMap[`${base}_category`] || '',
+          description: textMap[`${base}_description`] || '',
+          image: row.url,
+        };
+      });
+
+      setProjects(built);
+    };
+    fetchProjects();
+  }, []);
 
   // Sync category filter and select modal when URL params are present
   useEffect(() => {

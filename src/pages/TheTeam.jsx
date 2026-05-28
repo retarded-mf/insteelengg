@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { supabase } from '../lib/supabase';
 
-const team = [
+const DEFAULT_TEAM = [
   { name: "Raju Jagtap", role: "Founder & MD", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400" },
   { name: "Akshay Mhatre", role: "Contracts & Procurement Head", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400" },
   { name: "Suyog Jadhav", role: "Business Development & Operations", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },
@@ -9,6 +10,39 @@ const team = [
 
 const TheTeam = () => {
   useScrollReveal();
+  const [team, setTeam] = useState(DEFAULT_TEAM);
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      const { data: imgRows } = await supabase
+        .from('content')
+        .select('id, url, sequence')
+        .eq('pagename', 'team')
+        .eq('type', 'team')
+        .eq('status', 'published')
+        .order('sequence');
+
+      if (!imgRows || imgRows.length === 0) return;
+
+      const textIds = imgRows.flatMap(r => {
+        const base = r.id.replace('_img', '');
+        return [`${base}_name`, `${base}_role`];
+      });
+      const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+      const textMap = {};
+      (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+
+      setTeam(imgRows.map(row => {
+        const base = row.id.replace('_img', '');
+        return {
+          name: textMap[`${base}_name`] || '',
+          role: textMap[`${base}_role`] || '',
+          img: row.url,
+        };
+      }));
+    };
+    fetchTeam();
+  }, []);
 
   return (
     <div className="bg-white">

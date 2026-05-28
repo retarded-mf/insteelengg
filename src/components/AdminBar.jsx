@@ -16,14 +16,14 @@ const AdminBar = () => {
     }
   };
 
-  const handleExit = () => {
-    logout();
+  const handleExit = async () => {
+    await logout();
     window.location.href = '/admin';
   };
 
   return (
     <div className="w-full h-[52px] bg-[#1A1A1A] border-b border-primary-red text-white px-6 lg:px-12 flex items-center justify-between gap-4 z-[110] fixed top-0 left-0 shadow-[0_4px_16px_rgba(0,0,0,0.25)] select-none">
-      {/* Left: Administrative Status */}
+      {/* Left: Administrative Status + Dashboard nav */}
       <div className="flex items-center gap-3">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-red opacity-75"></span>
@@ -38,6 +38,13 @@ const AdminBar = () => {
             — Double-click text or hover images to edit live.
           </span>
         </div>
+        <span className="w-[1px] h-4 bg-white/10 hidden sm:block" />
+        <a
+          href="/admin?tab=dashboard"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border border-white/10 hover:border-primary-red/50 rounded text-[10px] font-black uppercase tracking-widest hover:bg-primary-red/10 transition-all duration-300 text-white/60 hover:text-white"
+        >
+          Dashboard
+        </a>
       </div>
 
       {/* Right: Operations Control Panel */}

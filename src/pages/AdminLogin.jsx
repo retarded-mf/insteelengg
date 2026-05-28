@@ -16,13 +16,14 @@ import Blog from './Blog';
 import Events from './Events';
 import Contact from './Contact';
 import Barricading from './Barricading';
+import AdminDashboard from './AdminDashboard';
 
 const AdminLogin = () => {
   const { login, isAdminActive } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,28 +32,25 @@ const AdminLogin = () => {
   const query = new URLSearchParams(location.search);
   const currentTab = query.get('tab') || 'home';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(false);
     setLoading(true);
-
-    // Simulate minor premium network delay
-    setTimeout(() => {
-      const success = login(username, password);
-      setLoading(false);
-      if (success) {
-        // Stay exactly on /admin, URL query resets to clean tab=home
-        navigate('/admin?tab=home');
-      } else {
-        setError(true);
-        setPassword('');
-      }
-    }, 1000);
+    const success = await login(email, password);
+    setLoading(false);
+    if (success) {
+      navigate('/admin?tab=home');
+    } else {
+      setError(true);
+      setPassword('');
+    }
   };
 
   // If Admin Session is active, render the corresponding sub-page directly within /admin route
   if (isAdminActive) {
     switch (currentTab) {
+      case 'dashboard':
+        return <AdminDashboard />;
       case 'about':
         return <AboutInsteel />;
       case 'team':
@@ -112,21 +110,21 @@ const AdminLogin = () => {
 
         {/* Form Block */}
         <form onSubmit={handleSubmit} className="w-full space-y-4">
-          {/* Username */}
+          {/* Email */}
           <div className="space-y-2">
             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              Administrator ID
+              Administrator Email
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                 <User size={16} />
               </span>
               <input
-                type="text"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@insteelengg.com"
                 className="w-full bg-slate-50 border border-slate-200 focus:border-primary-red/60 focus:ring-1 focus:ring-primary-red/30 px-11 py-3.5 text-slate-900 placeholder-slate-400/60 text-sm rounded transition-all focus:outline-none"
               />
             </div>
@@ -180,17 +178,7 @@ const AdminLogin = () => {
           </div>
         </form>
 
-        {/* Demo hints */}
-        <div className="w-full text-center border-t border-slate-100 pt-5">
-          <div className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 mb-2">
-            Development Demo Access
-          </div>
-          <div className="inline-flex gap-4 text-[10px] text-slate-600 font-bold bg-slate-50 border border-slate-200/60 px-4 py-2 rounded">
-            <span>ID: <code className="text-slate-800">admin</code></span>
-            <span className="w-[1px] h-3.5 bg-slate-200 self-center" />
-            <span>Key: <code className="text-slate-800">insteel2026</code></span>
-          </div>
-        </div>
+
 
       </div>
     </div>
