@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLocation } from 'react-router-dom';
 
 const AdminContext = createContext(null);
 
@@ -45,7 +46,8 @@ export const AdminProvider = ({ children }) => {
   }, []);
 
   // ── Derived: isAdminActive ────────────────────────────────────
-  const isAdminActive = !!session;
+  const location = useLocation();
+  const isAdminActive = !!session && location.pathname.startsWith('/admin');
 
   // ── Auth Actions ──────────────────────────────────────────────
   const login = async (email, password) => {

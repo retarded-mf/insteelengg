@@ -33,7 +33,7 @@ const Barricading = () => {
           <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.6)] z-10" />
         </div>
 
-        <div className="relative z-20 max-w-[1440px] mx-auto px-6 lg:px-12 py-32 w-full">
+        <div className="relative z-20 max-w-[1440px] mx-auto px-6 lg:px-12 pt-48 pb-32 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* Left — Text */}

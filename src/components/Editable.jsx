@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAdmin } from '../context/AdminContext';
 import { supabase } from '../lib/supabase';
 import { Edit3, Camera, Save, X, Image as ImageIcon, UploadCloud, Loader2 } from 'lucide-react';
@@ -6,22 +7,27 @@ import { Edit3, Camera, Save, X, Image as ImageIcon, UploadCloud, Loader2 } from
 /* ─── Inline Editable Text Component ──────────────────────── */
 export const EditText = ({ id, defaultValue, className = '', isTextArea = false }) => {
   const { isAdminActive, getContent, setContent } = useAdmin();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const textRef = useRef(null);
 
   const value = getContent(id, defaultValue);
 
-  // Initialize input value when entering edit mode
   useEffect(() => {
-    if (isEditing) {
+    if (isModalOpen) {
       setInputValue(value);
     }
-  }, [isEditing, value]);
+  }, [isModalOpen, value]);
 
-  const handleSave = () => {
+  const handleSave = (e) => {
+    e.preventDefault();
     setContent(id, inputValue.trim() || defaultValue);
-    setIsEditing(false);
+    setIsModalOpen(false);
+  };
+
+  const handleRevert = () => {
+    setContent(id, undefined);
+    setIsModalOpen(false);
   };
 
   if (!isAdminActive) {
@@ -29,65 +35,99 @@ export const EditText = ({ id, defaultValue, className = '', isTextArea = false 
   }
 
   return (
-    <span className={`inline-block ${className} relative group/text pointer-events-auto`}>
-      {isEditing ? (
-        isTextArea ? (
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSave();
-              }
-            }}
-            className="w-full bg-white text-charcoal border-2 border-primary-red p-2.5 rounded focus:outline-none shadow-lg shrink-0 relative z-20 cursor-text"
-            style={{
-              fontSize: 'inherit',
-              fontWeight: 'inherit',
-              lineHeight: 'inherit',
-              letterSpacing: 'inherit',
-              textTransform: 'inherit',
-              fontFamily: 'inherit',
-            }}
-            rows={3}
-            autoFocus
-          />
-        ) : (
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-            className="bg-white text-charcoal border-2 border-primary-red px-2.5 py-1 rounded focus:outline-none shadow-lg shrink-0 relative z-20 cursor-text w-full"
-            style={{
-              fontSize: 'inherit',
-              fontWeight: 'inherit',
-              lineHeight: 'inherit',
-              letterSpacing: 'inherit',
-              textTransform: 'inherit',
-              fontFamily: 'inherit',
-            }}
-            autoFocus
-          />
-        )
-      ) : (
-        <span
-          ref={textRef}
-          onDoubleClick={() => setIsEditing(true)}
-          className="cursor-pointer border-b border-dashed border-transparent hover:border-primary-red/50 hover:bg-primary-red/5 pr-6 transition-all rounded"
-          title="Double-click to edit text"
-        >
-          {value}
-          {/* Edit floating pencil marker */}
-          <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/text:opacity-100 transition-opacity ml-1.5 text-primary-red pointer-events-none">
-            <Edit3 size={11} />
-          </span>
+    <>
+      <span
+        ref={textRef}
+        onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+        className={`inline-block relative group/text cursor-pointer border-b border-dashed border-transparent hover:border-primary-red/50 hover:bg-primary-red/5 pr-6 transition-all rounded ${className}`}
+        title="Click to edit text"
+      >
+        {value}
+        <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/text:opacity-100 transition-opacity ml-1.5 text-primary-red pointer-events-none">
+          <Edit3 size={11} />
         </span>
+      </span>
+
+      {isModalOpen && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/65 backdrop-blur-sm pointer-events-auto overflow-y-auto">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white text-charcoal max-w-2xl w-full p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-100 flex flex-col space-y-6 animate-in fade-in zoom-in-95 duration-300"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center gap-2.5">
+                <Edit3 size={18} className="text-primary-red" />
+                <h4 className="text-base font-black uppercase tracking-tight">Text Editor</h4>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-charcoal p-1.5 rounded-full border border-gray-200 hover:bg-gray-50 transition-all focus:outline-none"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Input Form */}
+            <form onSubmit={handleSave} className="flex flex-col space-y-6">
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  Edit Content
+                </label>
+                {isTextArea ? (
+                  <textarea
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 focus:border-primary-red/50 focus:ring-1 focus:ring-primary-red/25 px-4 py-3 text-charcoal text-sm rounded transition-all focus:outline-none resize-y min-h-[150px]"
+                    autoFocus
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 focus:border-primary-red/50 focus:ring-1 focus:ring-primary-red/25 px-4 py-3 text-charcoal text-sm rounded transition-all focus:outline-none"
+                    autoFocus
+                  />
+                )}
+                <div className="text-[10px] text-gray-400 mt-2">
+                  Changes apply immediately upon saving. Leave blank to restore the default text.
+                </div>
+              </div>
+
+              {/* Action Buttons Form */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3.5 border border-gray-200 hover:bg-gray-50 text-charcoal font-black text-[10px] uppercase tracking-widest rounded transition-all focus:outline-none"
+                >
+                  Cancel
+                </button>
+                {value !== defaultValue && (
+                  <button
+                    type="button"
+                    onClick={handleRevert}
+                    className="py-3.5 px-3.5 border border-red-200 hover:bg-red-50 text-primary-red font-black text-[10px] uppercase tracking-widest rounded transition-all focus:outline-none flex items-center justify-center gap-1.5"
+                    title="Remove custom text and restore original default"
+                  >
+                    Revert to Default
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="flex-grow flex items-center justify-center gap-2 py-3.5 bg-primary-red hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-widest rounded transition-all focus:outline-none shadow-md"
+                >
+                  <Save size={12} />
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
-    </span>
+    </>
   );
 };
 
@@ -165,10 +205,10 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
 
       {/* Admin Hover Overlay Banner */}
       <div
-        onClick={() => setIsModalOpen(true)}
+        onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
         className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover/image:opacity-100 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 z-10"
       >
-        <div className="p-3 bg-white/10 rounded-full border border-white/20 text-white shadow-md animate-bounce">
+        <div className="p-3 bg-white/10 rounded-full border border-white/20 text-white shadow-md">
           <Camera size={20} />
         </div>
         <span className="text-white font-black text-[10px] uppercase tracking-[0.25em] bg-black/45 border border-white/10 px-3.5 py-1.5 rounded">
@@ -177,7 +217,7 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
       </div>
 
       {/* Image Swap Modal Popup */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/65 backdrop-blur-sm pointer-events-auto overflow-y-auto">
           <div
             onClick={(e) => e.stopPropagation()}
@@ -361,7 +401,8 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

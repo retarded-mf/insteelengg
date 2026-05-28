@@ -5,13 +5,17 @@ import Footer from './Footer';
 import { useAdmin } from '../context/AdminContext';
 
 const Layout = ({ children }) => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { isAdminActive } = useAdmin();
   
-  // Bypass standard layout only when on the login screen at /admin (unauthenticated)
-  const isLoginScreen = pathname === '/admin' && !isAdminActive;
+  const query = new URLSearchParams(search);
+  const currentTab = query.get('tab');
 
-  if (isLoginScreen) {
+  // Bypass standard layout for login screen or dashboard
+  const isLoginScreen = pathname === '/admin' && !isAdminActive;
+  const isDashboard = pathname === '/admin' && isAdminActive && currentTab === 'dashboard';
+
+  if (isLoginScreen || isDashboard) {
     return <div className="min-h-screen bg-charcoal flex flex-col">{children}</div>;
   }
 

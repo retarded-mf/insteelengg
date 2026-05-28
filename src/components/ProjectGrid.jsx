@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { X, Globe, Calendar, Weight, Settings } from 'lucide-react';
 import { projects as DEFAULT_PROJECTS, categories } from '../data/projects';
 import { supabase } from '../lib/supabase';
+import { EditText, EditImage } from './Editable';
+import { SectionManager } from './SectionManager';
 
 /* ─── Premium Interactive Project Modal ────────────────────── */
 const ProjectModal = ({ project, onClose }) => {
@@ -80,7 +83,7 @@ const ProjectModal = ({ project, onClose }) => {
   const gallery = getGallery(project);
   const [activeImg, setActiveImg] = useState(gallery[0]);
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop with Blur */}
       <div
@@ -183,7 +186,8 @@ const ProjectModal = ({ project, onClose }) => {
 
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 
@@ -206,34 +210,40 @@ const FlipCard = ({ project, onViewMore }) => {
       >
         {/* Front */}
         <div
-          className="absolute inset-0 overflow-hidden rounded-xl border border-gray-200/50 shadow-md bg-white"
+          className={`absolute inset-0 overflow-hidden rounded-xl border border-gray-200/50 shadow-md bg-white ${flipped ? 'pointer-events-none' : 'pointer-events-auto'}`}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <img
-            src={project.image}
-            alt={project.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/10" />
-          <div className="absolute bottom-0 left-0 p-8">
+          <div className="absolute inset-0 z-0 h-full w-full">
+            <EditImage 
+              id={`${project.baseId}_img`}
+              defaultUrl={project.image}
+              alt={project.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 p-8 z-10 pointer-events-auto">
             <div className="text-primary-red text-[10px] font-black uppercase tracking-[0.3em] mb-2.5">
-              {project.category}
+              <EditText id={`${project.baseId}_category`} defaultValue={project.category || 'Category'} />
             </div>
             <h3 className="text-white font-black text-2xl uppercase tracking-tighter leading-none mb-1.5 drop-shadow-md">
-              {project.name}
+              <EditText id={`${project.baseId}_name`} defaultValue={project.name || 'Project Name'} />
             </h3>
             <p className="text-white/60 text-xs font-bold uppercase tracking-widest mt-1">
-              {project.location}
+              <EditText id={`${project.baseId}_location`} defaultValue={project.location || 'Location'} />
             </p>
           </div>
-          <div className="absolute top-4 right-4 bg-primary-red/80 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded shadow-sm">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setFlipped(true); }}
+            className="absolute top-4 right-4 bg-primary-red/80 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded shadow-sm z-10 hover:bg-primary-red focus:outline-none"
+          >
             Tap to flip
-          </div>
+          </button>
         </div>
 
         {/* Back */}
         <div
-          className="absolute inset-0 bg-charcoal p-8 flex flex-col justify-between rounded-xl border border-white/10 shadow-md"
+          className={`absolute inset-0 bg-charcoal p-8 flex flex-col justify-between rounded-xl border border-white/10 shadow-md ${flipped ? 'pointer-events-auto' : 'pointer-events-none'}`}
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
@@ -242,38 +252,47 @@ const FlipCard = ({ project, onViewMore }) => {
           <div className="space-y-4">
             <div>
               <div className="text-primary-red text-[10px] font-black uppercase tracking-[0.4em] mb-2">
-                {project.category}
+                <EditText id={`${project.baseId}_category`} defaultValue={project.category || 'Category'} />
               </div>
               <h3 className="text-white font-black text-2xl uppercase tracking-tighter leading-none">
-                {project.name}
+                <EditText id={`${project.baseId}_name`} defaultValue={project.name || 'Project Name'} />
               </h3>
             </div>
             <p className="text-white/70 text-[14px] leading-loose font-medium line-clamp-6">
-              {project.description || "Insteel delivered high-precision detailing and erection engineering works, securing perfect alignments and accelerated project scheduling parameters."}
+              <EditText id={`${project.baseId}_description`} defaultValue={project.description || 'Description goes here...'} isTextArea={true} />
             </p>
           </div>
 
-          <div className="flex items-center justify-between border-t border-white/10 pt-6">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between border-t border-white/10 pt-6 relative">
+            {/* Top-right flip back button */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setFlipped(false); }}
+              className="absolute -top-12 right-0 bg-white/10 hover:bg-white/20 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded shadow-sm focus:outline-none transition-colors"
+            >
+              Flip Back
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Stop parent click flip event
+                onViewMore(project);
+              }}
+              className="px-5 py-3 bg-primary-red hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-widest transition-all rounded shadow-md active:scale-95 focus:outline-none shrink-0"
+            >
+              View More
+            </button>
+            
+            <div className="grid grid-cols-2 gap-4 text-right">
               <div>
                 <div className="text-[9px] font-black uppercase tracking-widest text-white/30 mb-0.5">Location</div>
-                <div className="text-white font-black text-xs uppercase">{project.location}</div>
+                <div className="text-white font-black text-xs uppercase">
+                  <EditText id={`${project.baseId}_location`} defaultValue={project.location || 'Location'} />
+                </div>
               </div>
               <div>
                 <div className="text-[9px] font-black uppercase tracking-widest text-white/30 mb-0.5">Year Completed</div>
                 <div className="text-white font-black text-xs uppercase">{project.yearCompleted || '—'}</div>
               </div>
             </div>
-            
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // Stop parent click flip event
-                onViewMore(project);
-              }}
-              className="px-5 py-3 bg-primary-red hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-widest transition-all rounded shadow-md active:scale-95 focus:outline-none"
-            >
-              View More
-            </button>
           </div>
         </div>
       </div>
@@ -288,44 +307,48 @@ const ProjectGrid = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState(DEFAULT_PROJECTS);
 
-  // Fetch projects from Supabase
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const { data: imgRows } = await supabase
-        .from('content')
-        .select('id, url, position, sequence')
-        .eq('pagename', 'projects')
-        .eq('type', 'card')
-        .eq('status', 'published')
-        .order('sequence');
+  const fetchProjects = useCallback(async () => {
+    const { data: imgRows } = await supabase
+      .from('content')
+      .select('id, url, position, sequence')
+      .eq('pagename', 'projects')
+      .eq('type', 'card')
+      .order('sequence');
 
-      if (!imgRows || imgRows.length === 0) return;
+    if (!imgRows || imgRows.length === 0) {
+      setProjects([]);
+      return;
+    }
 
-      // Fetch all sibling text rows in one query
-      const textIds = imgRows.flatMap(r => {
-        const base = r.id.replace('_img', '');
-        return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
-      });
-      const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
-      const textMap = {};
-      (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+    // Fetch all sibling text rows in one query
+    const textIds = imgRows.flatMap(r => {
+      const base = r.id.replace('_img', '');
+      return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
+    });
+    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const textMap = {};
+    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
 
-      const built = imgRows.map((row, i) => {
-        const base = row.id.replace('_img', '');
-        return {
-          id: i + 1,
-          name: textMap[`${base}_name`] || '',
-          location: textMap[`${base}_location`] || '',
-          category: textMap[`${base}_category`] || '',
-          description: textMap[`${base}_description`] || '',
-          image: row.url,
-        };
-      });
+    const built = imgRows.map((row, i) => {
+      const base = row.id.replace('_img', '');
+      return {
+        id: row.id, // required for React key
+        dbId: row.id, // required for SectionManager
+        baseId: base,
+        name: textMap[`${base}_name`] || 'New Project',
+        location: textMap[`${base}_location`] || 'Location',
+        category: textMap[`${base}_category`] || 'Category',
+        description: textMap[`${base}_description`] || '',
+        image: row.url,
+      };
+    });
 
-      setProjects(built);
-    };
-    fetchProjects();
+    setProjects(built);
   }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   // Sync category filter and select modal when URL params are present
   useEffect(() => {
@@ -347,13 +370,15 @@ const ProjectGrid = () => {
         setSelectedProject(matched);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, projects]);
 
   const handleFilterChange = (cat) => {
     setFilter(cat);
     const newParams = { cat };
     const currentProj = searchParams.get('project');
+    const adminTab = searchParams.get('adminTab');
     if (currentProj) newParams.project = currentProj;
+    if (adminTab) newParams.adminTab = adminTab;
     setSearchParams(newParams);
   };
 
@@ -361,7 +386,9 @@ const ProjectGrid = () => {
     setSelectedProject(project);
     const newParams = { project: project.name };
     const currentCat = searchParams.get('cat');
+    const adminTab = searchParams.get('adminTab');
     if (currentCat) newParams.cat = currentCat;
+    if (adminTab) newParams.adminTab = adminTab;
     setSearchParams(newParams);
   };
 
@@ -369,14 +396,26 @@ const ProjectGrid = () => {
     setSelectedProject(null);
     const newParams = {};
     const currentCat = searchParams.get('cat');
+    const adminTab = searchParams.get('adminTab');
     if (currentCat) newParams.cat = currentCat;
+    if (adminTab) newParams.adminTab = adminTab;
     setSearchParams(newParams);
   };
 
   const filteredProjects = projects.filter(p => filter === 'All' || p.category === filter);
 
   return (
-    <div>
+    <div className="relative">
+      <SectionManager
+        pageName="projects"
+        type="card"
+        items={projects}
+        label="Manage Portfolio"
+        renderItemLabel={(item) => item.name || 'New Project'}
+        onUpdate={fetchProjects}
+        wrapperClassName="flex justify-center mb-8"
+      />
+      
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-12 justify-center">
         {categories.map((cat) => (

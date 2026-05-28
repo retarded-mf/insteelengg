@@ -14,7 +14,6 @@ import Events from './pages/Events';
 import Contact from './pages/Contact';
 import Barricading from './pages/Barricading';
 import AdminLogin from './pages/AdminLogin';
-import AdminBar from './components/AdminBar';
 import { AdminProvider } from './context/AdminContext';
 import { useEffect } from 'react';
 
@@ -34,7 +33,6 @@ function App() {
     <Router>
       <AdminProvider>
         <ScrollToTop />
-        <AdminBar />
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />

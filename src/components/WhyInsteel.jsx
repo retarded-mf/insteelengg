@@ -1,6 +1,8 @@
 import React from 'react';
 import StatCounter from './StatCtr';
 import { EditText } from './Editable';
+import { SectionManager } from './SectionManager';
+import { useSectionData } from '../hooks/useSectionData';
 
 const boldClaims = [
   {
@@ -22,8 +24,18 @@ const boldClaims = [
 ];
 
 const WhyInsteel = () => {
+  const { items: claims, refetch } = useSectionData('home', 'why_insteel_claims', boldClaims);
+
   return (
-    <section className="py-32 bg-blue-grey">
+    <section className="py-32 bg-blue-grey relative">
+      <SectionManager
+        pageName="home"
+        type="why_insteel_claims"
+        items={claims}
+        label="Manage Bold Claims"
+        renderItemLabel={(item) => item.headline || 'New Claim'}
+        onUpdate={refetch}
+      />
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-start">
           <div className="lg:col-span-4 reveal-on-scroll">
@@ -39,16 +51,16 @@ const WhyInsteel = () => {
           </div>
 
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5 reveal-on-scroll">
-            {boldClaims.map((claim, idx) => (
+            {claims.map((claim, idx) => (
               <div
-                key={idx}
+                key={claim.dbId || idx}
                 className="bg-charcoal text-white p-8 md:p-10 group hover:bg-primary-red transition-colors duration-500"
               >
                 <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter leading-none group-hover:text-white">
-                  <EditText id={`whyinsteel_claim_${idx}_headline`} defaultValue={claim.headline} />
+                  <EditText id={`${claim.baseId || 'whyinsteel_claim_'+idx}_headline`} defaultValue={claim.headline} />
                 </h3>
                 <p className="mt-4 text-[11px] md:text-xs font-black uppercase tracking-[0.25em] text-white/50 group-hover:text-white/80 transition-colors">
-                  <EditText id={`whyinsteel_claim_${idx}_sub`} defaultValue={claim.sub} />
+                  <EditText id={`${claim.baseId || 'whyinsteel_claim_'+idx}_sub`} defaultValue={claim.sub} />
                 </p>
               </div>
             ))}

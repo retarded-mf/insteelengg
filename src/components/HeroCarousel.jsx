@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { EditText, EditImage } from './Editable';
+import { SectionManager } from './SectionManager';
 import { useAdmin } from '../context/AdminContext';
 import { supabase } from '../lib/supabase';
 
@@ -23,7 +24,7 @@ const HeroCarousel = () => {
   // Fetch slide image rows from Supabase, build slides list
   useEffect(() => {
     const fetchSlides = async () => {
-      const { data } = await supabase
+      const { data: imgRows } = await supabase
         .from('content')
         .select('id, url, position, sequence')
         .eq('pagename', 'home')
@@ -31,14 +32,32 @@ const HeroCarousel = () => {
         .eq('type', 'image')
         .order('sequence');
 
-      if (data && data.length > 0) {
-        setSlides(data.map(row => ({
-          id: row.id.replace('_img', ''),
+      if (!imgRows || imgRows.length === 0) {
+        setSlides([]);
+        return;
+      }
+
+      const textIds = imgRows.flatMap(r => {
+        const base = r.id.replace('_img', '');
+        return [`${base}_title`, `${base}_category`, `${base}_statement`];
+      });
+      const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+      const textMap = {};
+      (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+
+      setSlides(imgRows.map(row => {
+        const base = row.id.replace('_img', '');
+        return {
+          id: base,
+          dbId: row.id,
           image: row.url,
           objectPosition: row.position || 'center',
           link: '/projects',
-        })));
-      }
+          title: textMap[`${base}_title`] || 'Slide Title',
+          category: textMap[`${base}_category`] || 'Category',
+          statement: textMap[`${base}_statement`] || 'Slide Statement',
+        };
+      }));
     };
     fetchSlides();
   }, []);
@@ -54,6 +73,42 @@ const HeroCarousel = () => {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-charcoal">
+
+      {/* Admin Section Manager for Hero Slides */}
+      <SectionManager
+        pageName="home"
+        type="image"
+        sectionno={1}
+        items={slides}
+        label="Manage Hero Slides"
+        wrapperClassName="absolute top-40 right-6 z-50"
+        renderItemLabel={(item) => item.title || 'Hero Slide'}
+        onUpdate={() => {
+          // hacky way to force fetch without dependency loop
+          supabase
+            .from('content')
+            .select('id, url, position, sequence')
+            .eq('pagename', 'home')
+            .eq('sectionno', 1)
+            .eq('type', 'image')
+            .order('sequence')
+            .then(({ data: imgRows }) => {
+               if (!imgRows || imgRows.length === 0) { setSlides([]); return; }
+               const textIds = imgRows.flatMap(r => { const base = r.id.replace('_img', ''); return [`${base}_title`, `${base}_category`, `${base}_statement`]; });
+               supabase.from('content').select('id, url').in('id', textIds).then(({ data: textRows }) => {
+                 const textMap = {};
+                 (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+                 setSlides(imgRows.map(row => {
+                   const base = row.id.replace('_img', '');
+                   return {
+                     id: base, dbId: row.id, image: row.url, objectPosition: row.position || 'center', link: '/projects',
+                     title: textMap[`${base}_title`] || 'Slide Title', category: textMap[`${base}_category`] || 'Category', statement: textMap[`${base}_statement`] || 'Slide Statement',
+                   };
+                 }));
+               });
+            });
+        }}
+      />
 
       {/* ── Universal Brand Statement — clears the h-32 fixed navbar ── */}
       <div className="absolute top-0 left-0 right-0 z-30 flex flex-col items-center pt-48 pointer-events-none px-6 text-center">
@@ -76,23 +131,25 @@ const HeroCarousel = () => {
             }`}
         >
           {/* Vignette Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-10" />
-          <div className="absolute inset-0 bg-black/10 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none" />
 
           {/* Image */}
-          <EditImage
-            id={`${slide.id}_img`}
-            defaultUrl={slide.image}
-            alt={slide.title || ''}
-            style={{ objectPosition: slide.objectPosition || 'center' }}
-            className={`h-full w-full object-cover transition-transform duration-[10000ms] ease-linear ${index === current && !slide.noZoom ? 'scale-110' : 'scale-100'}`}
-          />
+          <div className="absolute inset-0 z-0">
+            <EditImage
+              id={`${slide.id}_img`}
+              defaultUrl={slide.image}
+              alt={slide.title || ''}
+              style={{ objectPosition: slide.objectPosition || 'center' }}
+              className={`h-full w-full object-cover transition-transform duration-[10000ms] ease-linear ${index === current && !slide.noZoom ? 'scale-110' : 'scale-100'}`}
+            />
+          </div>
 
           {/* Content */}
-          <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 md:px-24">
+          <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 md:px-24 pointer-events-none">
             {/* Main slide text — left-anchored and vertically centered */}
-            <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
-              <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4">
+            <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000 pointer-events-auto">
+              <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4 drop-shadow-md">
                 <EditText id={`${slide.id}_category`} defaultValue={slide.category || ''} />
               </h3>
               <h2 className="text-5xl md:text-8xl font-black text-white mb-10 leading-none uppercase tracking-tighter drop-shadow-2xl">
@@ -103,13 +160,6 @@ const HeroCarousel = () => {
                 <span className="text-white font-black uppercase text-xs tracking-[0.4em] group-hover:text-primary-red transition-colors">View Project</span>
               </Link>
             </div>
-          </div>
-
-          {/* Per-slide statement — absolutely positioned at bottom center */}
-          <div className="absolute bottom-12 left-0 right-0 z-30 text-center animate-in fade-in duration-1000 delay-500">
-            <span className="inline-block border-t border-white/20 pt-4 text-white/70 font-black text-[10px] md:text-xs uppercase tracking-[0.4em]">
-              <EditText id={`${slide.id}_statement`} defaultValue={slide.statement || ''} />
-            </span>
           </div>
         </div>
       ))}

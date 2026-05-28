@@ -132,16 +132,44 @@ const ProjectsSection = () => {
   const [loading, setLoading] = useState(true);
   const [editItem, setEditItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [dragItemIndex, setDragItemIndex] = useState(null);
+  const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data: imgRows } = await supabase
       .from('content')
       .select('*')
       .eq('pagename', 'projects')
       .eq('type', 'card')
       .order('sequence');
-    setProjects(data || []);
+      
+    if (!imgRows || imgRows.length === 0) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
+
+    const textIds = imgRows.flatMap(r => {
+      const base = r.id.replace('_img', '');
+      return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
+    });
+    
+    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const textMap = {};
+    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+
+    setProjects(imgRows.map((row) => {
+      const base = row.id.replace('_img', '');
+      return {
+        ...row,
+        _base: base,
+        _name: textMap[`${base}_name`] || '',
+        _location: textMap[`${base}_location`] || '',
+        _category: textMap[`${base}_category`] || '',
+        _description: textMap[`${base}_description`] || '',
+      };
+    }));
     setLoading(false);
   }, []);
 
@@ -230,6 +258,26 @@ const ProjectsSection = () => {
     await fetchProjects();
   };
 
+  const handleDragStart = (index) => setDragItemIndex(index);
+  const handleDragEnter = (index) => setDragOverItemIndex(index);
+  
+  const handleDragEnd = async () => {
+    if (dragItemIndex !== null && dragOverItemIndex !== null && dragItemIndex !== dragOverItemIndex) {
+      const updated = [...projects];
+      const draggedItem = updated[dragItemIndex];
+      updated.splice(dragItemIndex, 1);
+      updated.splice(dragOverItemIndex, 0, draggedItem);
+      
+      setProjects(updated);
+      
+      await Promise.all(
+        updated.map((proj, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', proj.id))
+      );
+    }
+    setDragItemIndex(null);
+    setDragOverItemIndex(null);
+  };
+
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-red" size={28} /></div>;
 
   return (
@@ -252,17 +300,28 @@ const ProjectsSection = () => {
           </div>
         )}
         {projects.map((proj, i) => (
-          <div key={proj.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:border-gray-200 transition-all">
+          <div 
+            key={proj.id} 
+            draggable
+            onDragStart={() => handleDragStart(i)}
+            onDragEnter={() => handleDragEnter(i)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${
+              dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
+            }`}
+          >
+            <GripVertical className="text-gray-300 shrink-0" size={24} />
             {proj.url && (
-              <img src={proj.url} alt="" className="w-16 h-12 object-cover rounded-lg border border-gray-100 shrink-0" />
+              <img src={proj.url} alt="" className="w-40 h-28 object-cover rounded-xl border border-gray-100 shrink-0 pointer-events-none" />
             )}
-            <div className="flex-1 min-w-0">
-              <div className="font-black text-sm text-charcoal truncate">{proj._name || '—'}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{proj._location || ''} {proj._category ? `· ${proj._category}` : ''}</div>
+            <div className="flex-1 min-w-0 pointer-events-none">
+              <div className="font-black text-xl text-charcoal truncate">{proj._name || '—'}</div>
+              <div className="text-sm text-gray-500 mt-1">{proj._location || ''} {proj._category ? `· ${proj._category}` : ''}</div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => handleEdit(proj)} className="p-2 rounded-lg border border-gray-200 hover:border-primary-red hover:text-primary-red text-gray-400 transition-all focus:outline-none"><Pencil size={14} /></button>
-              <button onClick={() => handleDelete(proj)} className="p-2 rounded-lg border border-gray-200 hover:border-red-300 hover:text-red-500 text-gray-400 transition-all focus:outline-none"><Trash2 size={14} /></button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={() => handleEdit(proj)} className="p-3 rounded-xl border border-gray-200 hover:border-primary-red hover:text-primary-red text-gray-400 bg-gray-50 hover:bg-white transition-all focus:outline-none"><Pencil size={18} /></button>
+              <button onClick={() => handleDelete(proj)} className="p-3 rounded-xl border border-gray-200 hover:border-red-300 hover:text-red-500 text-gray-400 bg-gray-50 hover:bg-white transition-all focus:outline-none"><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -294,16 +353,44 @@ const HeroSlidesSection = () => {
   const [loading, setLoading] = useState(true);
   const [editItem, setEditItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [dragItemIndex, setDragItemIndex] = useState(null);
+  const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
 
   const fetchSlides = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data: imgRows } = await supabase
       .from('content')
       .select('*')
       .eq('pagename', 'home')
-      .eq('position', 'hero')
+      .eq('sectionno', 1)
+      .eq('type', 'image')
       .order('sequence');
-    setSlides(data || []);
+      
+    if (!imgRows || imgRows.length === 0) {
+      setSlides([]);
+      setLoading(false);
+      return;
+    }
+
+    const textIds = imgRows.flatMap(r => {
+      const base = r.id.replace('_img', '');
+      return [`${base}_title`, `${base}_category`, `${base}_statement`];
+    });
+    
+    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const textMap = {};
+    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+
+    setSlides(imgRows.map(row => {
+      const base = row.id.replace('_img', '');
+      return {
+        ...row,
+        _base: base,
+        _title: textMap[`${base}_title`] || '',
+        _category: textMap[`${base}_category`] || '',
+        _statement: textMap[`${base}_statement`] || '',
+      };
+    }));
     setLoading(false);
   }, []);
 
@@ -342,7 +429,7 @@ const HeroSlidesSection = () => {
       id: imgId,
       type: 'image',
       url: editItem.url,
-      position: 'hero',
+      position: editItem.position || 'center',
       status: 'published',
       pagename: 'home',
       pageno: 1,
@@ -378,6 +465,26 @@ const HeroSlidesSection = () => {
     await fetchSlides();
   };
 
+  const handleDragStart = (index) => setDragItemIndex(index);
+  const handleDragEnter = (index) => setDragOverItemIndex(index);
+  
+  const handleDragEnd = async () => {
+    if (dragItemIndex !== null && dragOverItemIndex !== null && dragItemIndex !== dragOverItemIndex) {
+      const updated = [...slides];
+      const draggedItem = updated[dragItemIndex];
+      updated.splice(dragItemIndex, 1);
+      updated.splice(dragOverItemIndex, 0, draggedItem);
+      
+      setSlides(updated);
+      
+      await Promise.all(
+        updated.map((slide, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', slide.id))
+      );
+    }
+    setDragItemIndex(null);
+    setDragOverItemIndex(null);
+  };
+
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-red" size={28} /></div>;
 
   return (
@@ -400,19 +507,28 @@ const HeroSlidesSection = () => {
           </div>
         )}
         {slides.map((slide, i) => (
-          <div key={slide.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:border-gray-200 transition-all">
+          <div 
+            key={slide.id} 
+            draggable
+            onDragStart={() => handleDragStart(i)}
+            onDragEnter={() => handleDragEnter(i)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${
+              dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
+            }`}
+          >
+            <GripVertical className="text-gray-300 shrink-0" size={24} />
             {slide.url && (
-              <img src={slide.url} alt="" className="w-20 h-12 object-cover rounded-lg border border-gray-100 shrink-0" />
+              <img src={slide.url} alt="" className="w-48 h-28 object-cover rounded-xl border border-gray-100 shrink-0 pointer-events-none" />
             )}
-            <div className="flex-1 min-w-0">
-              <div className="font-black text-sm text-charcoal truncate">{slide._title || '—'}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{slide._category || ''}</div>
+            <div className="flex-1 min-w-0 pointer-events-none">
+              <div className="font-black text-xl text-charcoal truncate">{slide._title || '—'}</div>
+              <div className="text-sm text-gray-500 mt-1">{slide._category || ''}</div>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1.5 rounded text-gray-300 hover:text-charcoal disabled:opacity-20 transition-all focus:outline-none"><ArrowUp size={14} /></button>
-              <button onClick={() => move(i, 1)} disabled={i === slides.length - 1} className="p-1.5 rounded text-gray-300 hover:text-charcoal disabled:opacity-20 transition-all focus:outline-none"><ArrowDown size={14} /></button>
-              <button onClick={() => handleEdit(slide)} className="p-2 rounded-lg border border-gray-200 hover:border-primary-red hover:text-primary-red text-gray-400 transition-all focus:outline-none ml-1"><Pencil size={14} /></button>
-              <button onClick={() => handleDelete(slide)} className="p-2 rounded-lg border border-gray-200 hover:border-red-300 hover:text-red-500 text-gray-400 transition-all focus:outline-none"><Trash2 size={14} /></button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={() => handleEdit(slide)} className="p-3 rounded-xl border border-gray-200 hover:border-primary-red hover:text-primary-red text-gray-400 bg-gray-50 hover:bg-white transition-all focus:outline-none ml-2"><Pencil size={18} /></button>
+              <button onClick={() => handleDelete(slide)} className="p-3 rounded-xl border border-gray-200 hover:border-red-300 hover:text-red-500 text-gray-400 bg-gray-50 hover:bg-white transition-all focus:outline-none"><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -443,16 +559,42 @@ const TeamSection = () => {
   const [loading, setLoading] = useState(true);
   const [editItem, setEditItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [dragItemIndex, setDragItemIndex] = useState(null);
+  const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
 
   const fetchMembers = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data: imgRows } = await supabase
       .from('content')
       .select('*')
       .eq('pagename', 'team')
       .eq('type', 'team')
       .order('sequence');
-    setMembers(data || []);
+
+    if (!imgRows || imgRows.length === 0) {
+      setMembers([]);
+      setLoading(false);
+      return;
+    }
+
+    const textIds = imgRows.flatMap(r => {
+      const base = r.id.replace('_img', '');
+      return [`${base}_name`, `${base}_role`];
+    });
+    
+    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const textMap = {};
+    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+
+    setMembers(imgRows.map(row => {
+      const base = row.id.replace('_img', '');
+      return {
+        ...row,
+        _base: base,
+        _name: textMap[`${base}_name`] || '',
+        _role: textMap[`${base}_role`] || '',
+      };
+    }));
     setLoading(false);
   }, []);
 
@@ -511,6 +653,27 @@ const TeamSection = () => {
     await fetchMembers();
   };
 
+
+  const handleDragStart = (index) => setDragItemIndex(index);
+  const handleDragEnter = (index) => setDragOverItemIndex(index);
+  
+  const handleDragEnd = async () => {
+    if (dragItemIndex !== null && dragOverItemIndex !== null && dragItemIndex !== dragOverItemIndex) {
+      const updated = [...members];
+      const draggedItem = updated[dragItemIndex];
+      updated.splice(dragItemIndex, 1);
+      updated.splice(dragOverItemIndex, 0, draggedItem);
+      
+      setMembers(updated);
+      
+      await Promise.all(
+        updated.map((m, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', m.id))
+      );
+    }
+    setDragItemIndex(null);
+    setDragOverItemIndex(null);
+  };
+
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-red" size={28} /></div>;
 
   return (
@@ -532,18 +695,29 @@ const TeamSection = () => {
             <p className="text-xs mt-1">Click "Add Member" to get started</p>
           </div>
         )}
-        {members.map(m => (
-          <div key={m.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:border-gray-200 transition-all">
+        {members.map((m, i) => (
+          <div 
+            key={m.id} 
+            draggable
+            onDragStart={() => handleDragStart(i)}
+            onDragEnter={() => handleDragEnter(i)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${
+              dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
+            }`}
+          >
+            <GripVertical className="text-gray-300 shrink-0" size={24} />
             {m.url && (
-              <img src={m.url} alt="" className="w-12 h-12 object-cover rounded-full border-2 border-gray-100 shrink-0" />
+              <img src={m.url} alt="" className="w-24 h-24 object-cover rounded-full border-4 border-gray-50 shrink-0 pointer-events-none" />
             )}
-            <div className="flex-1 min-w-0">
-              <div className="font-black text-sm text-charcoal">{m._name || '—'}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{m._role || ''}</div>
+            <div className="flex-1 min-w-0 pointer-events-none">
+              <div className="font-black text-xl text-charcoal">{m._name || '—'}</div>
+              <div className="text-sm text-gray-500 mt-1">{m._role || ''}</div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => handleEdit(m)} className="p-2 rounded-lg border border-gray-200 hover:border-primary-red hover:text-primary-red text-gray-400 transition-all focus:outline-none"><Pencil size={14} /></button>
-              <button onClick={() => handleDelete(m)} className="p-2 rounded-lg border border-gray-200 hover:border-red-300 hover:text-red-500 text-gray-400 transition-all focus:outline-none"><Trash2 size={14} /></button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={() => handleEdit(m)} className="p-3 rounded-xl border border-gray-200 hover:border-primary-red hover:text-primary-red text-gray-400 bg-gray-50 hover:bg-white transition-all focus:outline-none"><Pencil size={18} /></button>
+              <button onClick={() => handleDelete(m)} className="p-3 rounded-xl border border-gray-200 hover:border-red-300 hover:text-red-500 text-gray-400 bg-gray-50 hover:bg-white transition-all focus:outline-none"><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -580,37 +754,38 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-[#F8F8F8] flex">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 bg-[#1A1A1A] flex flex-col pt-8 pb-6 fixed left-0 top-[52px] bottom-0 overflow-y-auto z-10">
-        <div className="px-5 mb-6">
-          <span className="text-[9px] font-black uppercase tracking-[0.35em] text-white/30">Content Manager</span>
+      <aside className="w-80 shrink-0 bg-[#1A1A1A] flex flex-col pt-10 pb-6 fixed left-0 top-0 bottom-0 overflow-y-auto z-10 shadow-2xl border-r border-white/5">
+        <div className="px-8 mb-8">
+          <span className="text-[10px] font-black uppercase tracking-[0.35em] text-white/30 block mb-2">Insteel CMS</span>
+          <h1 className="text-white font-black text-lg uppercase tracking-wider">Content Portal</h1>
         </div>
-        <nav className="flex flex-col gap-1 px-3">
+        <nav className="flex flex-col gap-2 px-5">
           {NAV.map(item => (
             <button
               key={item.id}
               onClick={() => setActive(item.id)}
-              className={`text-left px-4 py-3 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all focus:outline-none ${
+              className={`text-left px-5 py-4 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all focus:outline-none ${
                 active === item.id
-                  ? 'bg-primary-red text-white shadow-md'
-                  : 'text-white/50 hover:text-white hover:bg-white/5'
+                  ? 'bg-primary-red text-white shadow-lg translate-x-1'
+                  : 'text-white/50 hover:text-white hover:bg-white/5 hover:translate-x-1'
               }`}
             >
               {item.label}
             </button>
           ))}
         </nav>
-        <div className="mt-auto px-5 pt-6 border-t border-white/10">
+        <div className="mt-auto px-5 pt-8 border-t border-white/10">
           <a
             href="/admin?tab=home"
-            className="text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-4 border border-white/20 hover:border-white/40 hover:bg-white/5 text-[11px] font-black uppercase tracking-[0.2em] text-white/70 hover:text-white rounded-xl transition-all shadow-sm"
           >
-            ← Back to live site
+            ← Return to Live Site
           </a>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-56 pt-8 pb-16 px-8 max-w-3xl">
+      <main className="flex-1 ml-80 pt-12 pb-24 px-12 xl:px-24 w-full">
         {active === 'projects' && <ProjectsSection />}
         {active === 'slides' && <HeroSlidesSection />}
         {active === 'team' && <TeamSection />}

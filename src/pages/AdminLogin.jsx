@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { Shield, Key, User, ArrowRight, AlertTriangle } from 'lucide-react';
-import Logo from '../components/Logo';
+import logoImg from '../assets/images/logo.png';
 
-// Import all sub-pages for state-based rendering under /admin URL
+
+
 import Home from './Home';
 import AboutInsteel from './AboutInsteel';
 import TheTeam from './TheTeam';
@@ -16,10 +17,9 @@ import Blog from './Blog';
 import Events from './Events';
 import Contact from './Contact';
 import Barricading from './Barricading';
-import AdminDashboard from './AdminDashboard';
 
 const AdminLogin = () => {
-  const { login, isAdminActive } = useAdmin();
+  const { login, isAdminActive, session } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,9 +28,9 @@ const AdminLogin = () => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Parse tab search query parameter e.g., ?tab=about
+  // Parse tab search query parameter e.g., ?adminTab=about
   const query = new URLSearchParams(location.search);
-  const currentTab = query.get('tab') || 'home';
+  const currentTab = query.get('adminTab') || 'home';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,18 +39,25 @@ const AdminLogin = () => {
     const success = await login(email, password);
     setLoading(false);
     if (success) {
-      navigate('/admin?tab=home');
+      navigate('/admin?adminTab=home');
     } else {
       setError(true);
       setPassword('');
     }
   };
 
+  // Prevent flash while checking auth state
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-primary-red rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   // If Admin Session is active, render the corresponding sub-page directly within /admin route
   if (isAdminActive) {
     switch (currentTab) {
-      case 'dashboard':
-        return <AdminDashboard />;
       case 'about':
         return <AboutInsteel />;
       case 'team':
@@ -89,7 +96,7 @@ const AdminLogin = () => {
         
         {/* Logo Header */}
         <div className="flex flex-col items-center space-y-3">
-          <Logo className="scale-125 select-none" />
+          <img src={logoImg} alt="Insteel Logo" className="h-16 w-auto object-contain select-none" />
           <div className="text-center pt-2">
             <span className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-1 block">
               Control Portal

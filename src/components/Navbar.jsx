@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
-import Logo from './Logo';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut } from 'lucide-react';
+import logoImg from '../assets/images/logo.png';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAdmin } from '../context/AdminContext';
@@ -74,28 +74,35 @@ const Navbar = () => {
     { name: 'Special Structures', path: '/projects?cat=Special%20Structures', img: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=800" },
   ];
 
-  const { isAdminActive } = useAdmin();
+  const { isAdminActive, logout } = useAdmin();
+  const navigate = useNavigate();
 
-  // Helper to dynamically keep authenticated admins inside /admin workspace routing
+  const handleLogout = async () => {
+    await logout();
+    navigate('/admin');
+  };
+
+
+
   const getNavPath = (originalPath) => {
     if (!isAdminActive) return originalPath;
-    if (originalPath === '/') return '/admin?tab=home';
-    
+    if (originalPath === '/') return '/admin?adminTab=home';
+
     if (originalPath.startsWith('/what-we-do')) {
       const parts = originalPath.split('?');
       const search = parts[1] ? `&${parts[1]}` : '';
-      return `/admin?tab=what-we-do${search}`;
+      return `/admin?adminTab=what-we-do${search}`;
     }
     if (originalPath.startsWith('/projects')) {
       const parts = originalPath.split('?');
       const search = parts[1] ? `&${parts[1]}` : '';
-      return `/admin?tab=projects${search}`;
+      return `/admin?adminTab=projects${search}`;
     }
     if (originalPath.startsWith('/products/barricading')) {
-      return '/admin?tab=barricading';
+      return '/admin?adminTab=barricading';
     }
     const cleanPath = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
-    return `/admin?tab=${cleanPath}`;
+    return `/admin?adminTab=${cleanPath}`;
   };
 
   useEffect(() => {
@@ -107,24 +114,26 @@ const Navbar = () => {
     <nav
       className={cn(
         "fixed left-0 w-full bg-white z-50 border-b border-gray-100 transition-all duration-300",
-        isAdminActive ? "top-[52px]" : "top-0"
+        isAdminActive ? "top-0 border-t-4 border-t-primary-red" : "top-0"
       )}
       onMouseLeave={() => setActiveMega(null)}
     >
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative h-32 flex items-center">
+      <div className="w-full px-8 lg:px-16 relative h-32 flex items-center justify-between">
         {/* Logo */}
-        <Link to={getNavPath("/")} className="flex-shrink-0" onMouseEnter={() => setActiveMega(null)}>
-          <Logo className="scale-[1.35] origin-left" />
-        </Link>
+        <div className="flex-shrink-0 flex items-center" onMouseEnter={() => setActiveMega(null)}>
+          <Link to={getNavPath("/")}>
+            <img src={logoImg} alt="Insteel Logo" className="h-[70px] w-auto object-contain origin-left" />
+          </Link>
+        </div>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center space-x-8 h-full ml-auto justify-end">
+        <div className="hidden lg:flex items-center space-x-6 xl:space-x-8 h-full">
           {navLinks.map((link) => (
             <div
               key={link.name}
               className={cn(
                 "h-full flex items-center",
-                (link.id === 'who-we-are' || link.id === 'what-we-do' || link.id === 'company') && "relative"
+                (link.id === 'who-we-are' || link.id === 'what-we-do' || link.id === 'projects' || link.id === 'company') && "relative"
               )}
               onMouseEnter={() => link.id && setActiveMega(link.id)}
             >
@@ -196,6 +205,26 @@ const Navbar = () => {
                 </div>
               )}
 
+              {/* Projects dropdown */}
+              {link.id === 'projects' && activeMega === 'projects' && (
+                <div
+                  className="absolute top-full left-1/2 -translate-x-1/2 flex items-stretch w-max bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50"
+                  onMouseEnter={() => setActiveMega('projects')}
+                >
+                  <div className="py-8 px-8 w-[280px] shrink-0">
+                    <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Landmark EPC Projects</h4>
+                    <div className="grid grid-cols-1">
+                      {projectsMega.map((p) => (
+                        <Link key={p.name} to={getNavPath(p.path)} onMouseEnter={() => setActiveImage(p.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
+                    <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700" />
+                  </div>
+                </div>
+              )}
+
               {/* Company dropdown */}
               {link.id === 'company' && activeMega === 'company' && (
                 <div
@@ -232,30 +261,28 @@ const Navbar = () => {
             Careers
           </Link>
 
-          <Link to={getNavPath("/contact")} className="btn-quote !text-[13px]">
+          <Link to="/contact" className="btn-quote !text-[13px]">
             <span>Contact Us</span>
           </Link>
         </div>
 
-        {/* Projects mega menu */}
-        {activeMega === 'projects' && (
-          <div
-            className="absolute top-[128px] right-6 lg:right-12 flex items-stretch w-max bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50"
-            onMouseEnter={() => setActiveMega('projects')}
-          >
-            <div className="py-8 px-8 w-[280px] shrink-0">
-              <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Landmark EPC Projects</h4>
-              <div className="grid grid-cols-1">
-                {projectsMega.map((p) => (
-                  <Link key={p.name} to={getNavPath(p.path)} onMouseEnter={() => setActiveImage(p.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
-                ))}
-              </div>
+        {/* Admin Controls - Moved to the far right in their own block */}
+        {isAdminActive && (
+          <div className="hidden lg:flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-primary-red">
+              <span className="w-2 h-2 rounded-full bg-primary-red" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Admin Mode</span>
             </div>
-            <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
-              <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700" />
-            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 px-3 py-2 hover:bg-red-50 text-red-600 rounded transition-colors"
+              title="Exit Admin"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         )}
+
 
         {/* Mobile menu button */}
         <div className="lg:hidden flex items-center">
