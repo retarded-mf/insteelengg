@@ -47,7 +47,7 @@ const ImageField = ({ label, currentUrl, onUrlChange, uploadId }) => {
     <div className="space-y-2">
       <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">{label}</label>
       {currentUrl && (
-        <img src={currentUrl} alt="preview" className="w-full h-32 object-cover rounded-lg border border-gray-100 mb-2" />
+        <img src={currentUrl} alt="preview" className="w-full h-48 object-cover rounded-lg border border-gray-100 mb-2" />
       )}
       <label className="flex items-center gap-3 w-full border-2 border-dashed border-gray-200 hover:border-primary-red/50 bg-gray-50 rounded-lg cursor-pointer transition-all px-4 py-3">
         {uploading ? (
@@ -103,7 +103,7 @@ const SelectField = ({ label, value, onChange, options }) => (
 const EditPanel = ({ title, children, onSave, onClose, saving }) => (
   <div className="fixed inset-0 z-50 flex justify-end">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full max-w-lg bg-white h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+    <div className="relative w-full max-w-2xl bg-white h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
       <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
         <h3 className="font-black text-sm uppercase tracking-tight text-charcoal">{title}</h3>
         <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-charcoal transition-all focus:outline-none"><X size={16} /></button>
@@ -143,7 +143,7 @@ const ProjectsSection = () => {
       .eq('pagename', 'projects')
       .eq('type', 'card')
       .order('sequence');
-      
+
     if (!imgRows || imgRows.length === 0) {
       setProjects([]);
       setLoading(false);
@@ -154,7 +154,7 @@ const ProjectsSection = () => {
       const base = r.id.replace('_img', '');
       return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
     });
-    
+
     const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
     const textMap = {};
     (textRows || []).forEach(r => { textMap[r.id] = r.url; });
@@ -260,16 +260,16 @@ const ProjectsSection = () => {
 
   const handleDragStart = (index) => setDragItemIndex(index);
   const handleDragEnter = (index) => setDragOverItemIndex(index);
-  
+
   const handleDragEnd = async () => {
     if (dragItemIndex !== null && dragOverItemIndex !== null && dragItemIndex !== dragOverItemIndex) {
       const updated = [...projects];
       const draggedItem = updated[dragItemIndex];
       updated.splice(dragItemIndex, 1);
       updated.splice(dragOverItemIndex, 0, draggedItem);
-      
+
       setProjects(updated);
-      
+
       await Promise.all(
         updated.map((proj, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', proj.id))
       );
@@ -300,16 +300,15 @@ const ProjectsSection = () => {
           </div>
         )}
         {projects.map((proj, i) => (
-          <div 
-            key={proj.id} 
+          <div
+            key={proj.id}
             draggable
             onDragStart={() => handleDragStart(i)}
             onDragEnter={() => handleDragEnter(i)}
             onDragEnd={handleDragEnd}
             onDragOver={(e) => e.preventDefault()}
-            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${
-              dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
-            }`}
+            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
+              }`}
           >
             <GripVertical className="text-gray-300 shrink-0" size={24} />
             {proj.url && (
@@ -365,7 +364,7 @@ const HeroSlidesSection = () => {
       .eq('sectionno', 1)
       .eq('type', 'image')
       .order('sequence');
-      
+
     if (!imgRows || imgRows.length === 0) {
       setSlides([]);
       setLoading(false);
@@ -376,7 +375,7 @@ const HeroSlidesSection = () => {
       const base = r.id.replace('_img', '');
       return [`${base}_title`, `${base}_category`, `${base}_statement`];
     });
-    
+
     const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
     const textMap = {};
     (textRows || []).forEach(r => { textMap[r.id] = r.url; });
@@ -467,16 +466,16 @@ const HeroSlidesSection = () => {
 
   const handleDragStart = (index) => setDragItemIndex(index);
   const handleDragEnter = (index) => setDragOverItemIndex(index);
-  
+
   const handleDragEnd = async () => {
     if (dragItemIndex !== null && dragOverItemIndex !== null && dragItemIndex !== dragOverItemIndex) {
       const updated = [...slides];
       const draggedItem = updated[dragItemIndex];
       updated.splice(dragItemIndex, 1);
       updated.splice(dragOverItemIndex, 0, draggedItem);
-      
+
       setSlides(updated);
-      
+
       await Promise.all(
         updated.map((slide, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', slide.id))
       );
@@ -507,16 +506,15 @@ const HeroSlidesSection = () => {
           </div>
         )}
         {slides.map((slide, i) => (
-          <div 
-            key={slide.id} 
+          <div
+            key={slide.id}
             draggable
             onDragStart={() => handleDragStart(i)}
             onDragEnter={() => handleDragEnter(i)}
             onDragEnd={handleDragEnd}
             onDragOver={(e) => e.preventDefault()}
-            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${
-              dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
-            }`}
+            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
+              }`}
           >
             <GripVertical className="text-gray-300 shrink-0" size={24} />
             {slide.url && (
@@ -581,7 +579,7 @@ const TeamSection = () => {
       const base = r.id.replace('_img', '');
       return [`${base}_name`, `${base}_role`];
     });
-    
+
     const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
     const textMap = {};
     (textRows || []).forEach(r => { textMap[r.id] = r.url; });
@@ -656,16 +654,16 @@ const TeamSection = () => {
 
   const handleDragStart = (index) => setDragItemIndex(index);
   const handleDragEnter = (index) => setDragOverItemIndex(index);
-  
+
   const handleDragEnd = async () => {
     if (dragItemIndex !== null && dragOverItemIndex !== null && dragItemIndex !== dragOverItemIndex) {
       const updated = [...members];
       const draggedItem = updated[dragItemIndex];
       updated.splice(dragItemIndex, 1);
       updated.splice(dragOverItemIndex, 0, draggedItem);
-      
+
       setMembers(updated);
-      
+
       await Promise.all(
         updated.map((m, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', m.id))
       );
@@ -696,16 +694,15 @@ const TeamSection = () => {
           </div>
         )}
         {members.map((m, i) => (
-          <div 
-            key={m.id} 
+          <div
+            key={m.id}
             draggable
             onDragStart={() => handleDragStart(i)}
             onDragEnter={() => handleDragEnter(i)}
             onDragEnd={handleDragEnd}
             onDragOver={(e) => e.preventDefault()}
-            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${
-              dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
-            }`}
+            className={`flex items-center gap-8 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-move ${dragOverItemIndex === i ? 'border-primary-red border-dashed' : 'border-gray-100 hover:border-gray-200'
+              }`}
           >
             <GripVertical className="text-gray-300 shrink-0" size={24} />
             {m.url && (
@@ -764,11 +761,10 @@ const AdminDashboard = () => {
             <button
               key={item.id}
               onClick={() => setActive(item.id)}
-              className={`text-left px-5 py-4 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all focus:outline-none ${
-                active === item.id
+              className={`text-left px-5 py-4 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all focus:outline-none ${active === item.id
                   ? 'bg-primary-red text-white shadow-lg translate-x-1'
                   : 'text-white/50 hover:text-white hover:bg-white/5 hover:translate-x-1'
-              }`}
+                }`}
             >
               {item.label}
             </button>

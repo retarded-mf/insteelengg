@@ -28,15 +28,16 @@ const WhyInsteel = () => {
 
   return (
     <section className="py-32 bg-blue-grey relative">
-      <SectionManager
-        pageName="home"
-        type="why_insteel_claims"
-        items={claims}
-        label="Manage Bold Claims"
-        renderItemLabel={(item) => item.headline || 'New Claim'}
-        onUpdate={refetch}
-      />
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <SectionManager
+          pageName="home"
+          type="why_insteel_claims"
+          items={claims}
+          label="Manage Bold Claims"
+          renderItemLabel={(item) => item.headline || 'New Claim'}
+          onUpdate={refetch}
+          wrapperClassName="flex justify-end mb-6"
+        />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-start">
           <div className="lg:col-span-4 reveal-on-scroll">
             <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-6 block">

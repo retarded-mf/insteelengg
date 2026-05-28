@@ -137,7 +137,7 @@ const HeroCarousel = () => {
           {/* Image */}
           <div className="absolute inset-0 z-0">
             <EditImage
-              id={`${slide.id}_img`}
+              id={slide.dbId || `${slide.id}_img`}
               defaultUrl={slide.image}
               alt={slide.title || ''}
               style={{ objectPosition: slide.objectPosition || 'center' }}

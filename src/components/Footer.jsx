@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import Logo from './Logo';
+import { EditText } from './Editable';
 
 const Footer = () => {
   return (
@@ -15,15 +16,15 @@ const Footer = () => {
             <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
               <div className="flex items-start">
                 <MapPin className="w-5 h-5 text-primary-red mr-3 mt-0.5 flex-shrink-0" />
-                <span>804, The Ambience Court, Sector 19-D, Vashi, Navi Mumbai 400703</span>
+                <span><EditText id="footer_address" defaultValue="804, The Ambience Court, Sector 19-D, Vashi, Navi Mumbai 400703" /></span>
               </div>
               <div className="flex items-center">
                 <Phone className="w-5 h-5 text-primary-red mr-3 flex-shrink-0" />
-                <span>+91 22 41112000</span>
+                <span><EditText id="footer_phone" defaultValue="+91 22 41112000" /></span>
               </div>
               <div className="flex items-center">
                 <Mail className="w-5 h-5 text-primary-red mr-3 flex-shrink-0" />
-                <span>sales@insteelengg.com</span>
+                <span><EditText id="footer_email" defaultValue="sales@insteelengg.com" /></span>
               </div>
             </div>
             <div className="flex space-x-4 mt-6">

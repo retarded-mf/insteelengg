@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { EditText } from '../components/Editable';
 
 const Contact = () => {
   return (
@@ -7,8 +8,12 @@ const Contact = () => {
       {/* Header */}
       <section className="pt-48 pb-24 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 uppercase tracking-tighter">Get In Touch</h1>
-          <p className="text-xl text-primary-red font-bold uppercase tracking-[0.3em]">Let's Build Something Landmark Together</p>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 uppercase tracking-tighter">
+            <EditText id="contact_header_title" defaultValue="Get In Touch" />
+          </h1>
+          <p className="text-xl text-primary-red font-bold uppercase tracking-[0.3em]">
+            <EditText id="contact_header_subtitle" defaultValue="Let's Build Something Landmark Together" />
+          </p>
         </div>
       </section>
 
@@ -17,7 +22,9 @@ const Contact = () => {
           
           {/* Left: Contact Form */}
           <div className="bg-charcoal p-10 md:p-16 shadow-2xl">
-            <h2 className="text-3xl font-extrabold text-white mb-10 uppercase tracking-tight">Send Us a Message</h2>
+            <h2 className="text-3xl font-extrabold text-white mb-10 uppercase tracking-tight">
+              <EditText id="contact_form_title" defaultValue="Send Us a Message" />
+            </h2>
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
@@ -46,17 +53,20 @@ const Contact = () => {
           {/* Right: Info */}
           <div className="flex flex-col justify-between">
             <div>
-              <h2 className="text-3xl font-extrabold text-charcoal mb-10 uppercase tracking-tight">Contact Information</h2>
+              <h2 className="text-3xl font-extrabold text-charcoal mb-10 uppercase tracking-tight">
+                <EditText id="contact_info_title" defaultValue="Contact Information" />
+              </h2>
               <div className="space-y-12">
                 <div className="flex items-start">
                   <div className="w-12 h-12 bg-blue-grey flex items-center justify-center text-primary-red flex-shrink-0 mr-6">
                     <MapPin size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-charcoal uppercase mb-2">Registered Office</h4>
+                    <h4 className="font-bold text-charcoal uppercase mb-2">
+                      <EditText id="contact_address_label" defaultValue="Registered Office" />
+                    </h4>
                     <p className="text-gray-500 leading-relaxed font-medium">
-                      804, The Ambience Court, Sector 19-D, Vashi,<br />
-                      Navi Mumbai 400703, Maharashtra, India.
+                      <EditText id="contact_address" defaultValue="804, The Ambience Court, Sector 19-D, Vashi, Navi Mumbai 400703, Maharashtra, India." isTextArea={true} />
                     </p>
                   </div>
                 </div>
@@ -66,8 +76,12 @@ const Contact = () => {
                     <Phone size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-charcoal uppercase mb-2">Call Us</h4>
-                    <p className="text-gray-500 font-bold text-xl">+91 22 41112000</p>
+                    <h4 className="font-bold text-charcoal uppercase mb-2">
+                      <EditText id="contact_phone_label" defaultValue="Call Us" />
+                    </h4>
+                    <p className="text-gray-500 font-bold text-xl">
+                      <EditText id="contact_phone" defaultValue="+91 22 41112000" />
+                    </p>
                   </div>
                 </div>
 
@@ -76,8 +90,12 @@ const Contact = () => {
                     <Mail size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-charcoal uppercase mb-2">Email Us</h4>
-                    <p className="text-gray-500 font-medium hover:text-primary-red cursor-pointer transition-colors">sales@insteelengg.com</p>
+                    <h4 className="font-bold text-charcoal uppercase mb-2">
+                      <EditText id="contact_email_label" defaultValue="Email Us" />
+                    </h4>
+                    <p className="text-gray-500 font-medium hover:text-primary-red cursor-pointer transition-colors">
+                      <EditText id="contact_email" defaultValue="sales@insteelengg.com" />
+                    </p>
                   </div>
                 </div>
               </div>

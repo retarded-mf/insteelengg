@@ -3,10 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import ServicePanel from '../components/ServicePanel';
 import { engineeringServices, constructionServices } from '../data/services';
 import { ExternalLink, Shield, Sun, Building2, HardHat, Ruler } from 'lucide-react';
+import { EditText, EditImage } from '../components/Editable';
+import { useAdmin } from '../context/AdminContext';
 
 const WhatWeDo = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'engineering');
+  const { isAdminActive } = useAdmin();
 
   const tabs = [
     { id: 'engineering', label: 'Engineering', icon: Ruler },
@@ -22,7 +25,10 @@ const WhatWeDo = () => {
 
   const handleTabChange = (id) => {
     setActiveTab(id);
-    setSearchParams({ tab: id });
+    // In admin mode, don't touch search params to avoid navigation
+    if (!isAdminActive) {
+      setSearchParams({ tab: id });
+    }
   };
 
   return (
@@ -30,8 +36,12 @@ const WhatWeDo = () => {
       {/* Header */}
       <section className="pt-48 pb-12 bg-blue-grey text-center">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-charcoal mb-4 uppercase tracking-tighter">What We Do</h1>
-          <p className="text-primary-red font-bold uppercase tracking-[0.3em] text-sm">Comprehensive Infrastructure Solutions</p>
+          <h1 className="text-5xl md:text-6xl font-extrabold text-charcoal mb-4 uppercase tracking-tighter">
+            <EditText id="whatwedo_header_title" defaultValue="What We Do" />
+          </h1>
+          <p className="text-primary-red font-bold uppercase tracking-[0.3em] text-sm">
+            <EditText id="whatwedo_header_subtitle" defaultValue="Comprehensive Infrastructure Solutions" />
+          </p>
         </div>
       </section>
 
@@ -62,9 +72,11 @@ const WhatWeDo = () => {
         {activeTab === 'engineering' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-12">
-              <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">Engineering Excellence</h2>
+              <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">
+                <EditText id="whatwedo_engineering_title" defaultValue="Engineering Excellence" />
+              </h2>
               <p className="text-lg text-gray-500 max-w-3xl leading-relaxed">
-                Our in-house design and detailing team utilizes world-class software like Tekla and REVIT to provide high-precision BIM models and connection designs. We ensure every bolt is accounted for before fabrication begins.
+                <EditText id="whatwedo_engineering_desc" defaultValue="Our in-house design and detailing team utilizes world-class software like Tekla and REVIT to provide high-precision BIM models and connection designs. We ensure every bolt is accounted for before fabrication begins." isTextArea={true} />
               </p>
             </div>
             <ServicePanel services={engineeringServices} initialService={searchParams.get('service')} />
@@ -74,9 +86,11 @@ const WhatWeDo = () => {
         {activeTab === 'construction' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="mb-12">
-              <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">Construction & Delivery</h2>
+              <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">
+                <EditText id="whatwedo_construction_title" defaultValue="Construction & Delivery" />
+              </h2>
               <p className="text-lg text-gray-500 max-w-3xl leading-relaxed">
-                From scalable fabrication facilities across India to high-rise erection up to 300 meters, our construction capabilities are designed for scale, speed, and safety.
+                <EditText id="whatwedo_construction_desc" defaultValue="From scalable fabrication facilities across India to high-rise erection up to 300 meters, our construction capabilities are designed for scale, speed, and safety." isTextArea={true} />
               </p>
             </div>
             <ServicePanel services={constructionServices} initialService={searchParams.get('service')} />
@@ -86,9 +100,11 @@ const WhatWeDo = () => {
         {activeTab === 'solar' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-12">
-              <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">Solar Solutions</h2>
+              <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">
+                <EditText id="whatwedo_solar_title" defaultValue="Solar Solutions" />
+              </h2>
               <p className="text-lg text-gray-500 max-w-3xl leading-relaxed">
-                Insteel Solar provides integrated structural solutions for renewable energy projects, maximizing efficiency and structural integrity.
+                <EditText id="whatwedo_solar_desc" defaultValue="Insteel Solar provides integrated structural solutions for renewable energy projects, maximizing efficiency and structural integrity." isTextArea={true} />
               </p>
             </div>
             
@@ -101,19 +117,22 @@ const WhatWeDo = () => {
               ].map((solar, i) => (
                 <a 
                   key={i} 
-                  href={solar.href}
-                  target="_blank" 
+                  href={isAdminActive ? undefined : solar.href}
+                  target={isAdminActive ? undefined : "_blank"}
                   rel="noopener noreferrer"
+                  onClick={isAdminActive ? (e) => e.preventDefault() : undefined}
                   className="group bg-blue-grey p-8 flex flex-col sm:flex-row items-center gap-8 hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-primary-red"
                 >
                   <div className="w-full sm:w-48 h-32 overflow-hidden flex-shrink-0">
-                    <img src={solar.img} alt={solar.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    <EditImage id={`whatwedo_solar_${i}_image`} defaultUrl={solar.img} alt={solar.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-charcoal mb-2 flex items-center">
-                      {solar.title} <ExternalLink size={16} className="ml-2 text-primary-red" />
+                      <EditText id={`whatwedo_solar_${i}_title`} defaultValue={solar.title} /> <ExternalLink size={16} className="ml-2 text-primary-red" />
                     </h3>
-                    <p className="text-sm text-gray-500">{solar.desc}</p>
+                    <p className="text-sm text-gray-500">
+                      <EditText id={`whatwedo_solar_${i}_desc`} defaultValue={solar.desc} />
+                    </p>
                   </div>
                 </a>
               ))}
@@ -125,17 +144,19 @@ const WhatWeDo = () => {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                <div className="h-[400px] bg-charcoal">
-                  <img src="https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" alt="Barricading" className="w-full h-full object-cover opacity-60" />
+                  <EditImage id="whatwedo_barricading_image" defaultUrl="https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" alt="Barricading" className="w-full h-full object-cover opacity-60" />
                </div>
                <div>
-                  <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase">Compliance Barricading</h2>
+                  <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase">
+                    <EditText id="whatwedo_barricading_title" defaultValue="Compliance Barricading" />
+                  </h2>
                   <p className="text-lg text-gray-500 mb-4 leading-relaxed">
-                    Mandate-compliant 35 ft and 25 ft steel barricades—engineered, fabricated, and installed by an integrated EPC. Reduce stop-work risk before execution begins.
+                    <EditText id="whatwedo_barricading_desc" defaultValue="Mandate-compliant 35 ft and 25 ft steel barricades—engineered, fabricated, and installed by an integrated EPC. Reduce stop-work risk before execution begins." isTextArea={true} />
                   </p>
                   <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mb-8">
-                    ₹1–100 Cr. project scale · BMC / MMRDA aligned
+                    <EditText id="whatwedo_barricading_spec" defaultValue="₹1–100 Cr. project scale · BMC / MMRDA aligned" />
                   </p>
-                  <Link to="/products/barricading" className="btn-red inline-flex items-center">
+                  <Link to={isAdminActive ? "#" : "/products/barricading"} onClick={isAdminActive ? (e) => e.preventDefault() : undefined} className="btn-red inline-flex items-center">
                     Explore Barricading <ExternalLink size={20} className="ml-2" />
                   </Link>
                </div>
