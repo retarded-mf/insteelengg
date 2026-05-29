@@ -17,6 +17,10 @@ import Blog from './Blog';
 import Events from './Events';
 import Contact from './Contact';
 import Barricading from './Barricading';
+import News from './News';
+import Investor from './Investor';
+import AnnualReport from './AnnualReport';
+import Careers from './Careers';
 
 const AdminLogin = () => {
   const { login, isAdminActive, session } = useAdmin();
@@ -79,6 +83,14 @@ const AdminLogin = () => {
       case 'barricading':
       case 'products/barricading':
         return <Barricading />;
+      case 'news':
+        return <News />;
+      case 'investor':
+        return <Investor />;
+      case 'annual-report':
+        return <AnnualReport />;
+      case 'careers':
+        return <Careers />;
       default:
         return <Home />;
     }

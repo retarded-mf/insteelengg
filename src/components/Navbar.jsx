@@ -5,6 +5,7 @@ import logoImg from '../assets/images/logo.png';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAdmin } from '../context/AdminContext';
+import { EditImage } from './Editable';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -15,7 +16,10 @@ const MEGA_PREVIEW_IMAGE = 'w-[400px] min-h-[300px]';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null);
-  const [activeImage, setActiveImage] = useState("https://images.unsplash.com/photo-1541888941259-79273ceb0022?auto=format&fit=crop&q=80&w=800");
+  const [hoveredMegaItem, setHoveredMegaItem] = useState({
+    name: 'About Insteel',
+    defaultUrl: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800'
+  });
   const location = useLocation();
 
   const navLinks = [
@@ -74,8 +78,12 @@ const Navbar = () => {
     { name: 'Special Structures', path: '/projects?cat=Special%20Structures', img: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=800" },
   ];
 
-  const { isAdminActive, logout } = useAdmin();
+  const { isAdminActive, logout, getContent } = useAdmin();
   const navigate = useNavigate();
+
+  const activePreviewUrl = hoveredMegaItem
+    ? getContent(`mega_${hoveredMegaItem.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_img`, hoveredMegaItem.defaultUrl)
+    : 'https://images.unsplash.com/photo-1541888941259-79273ceb0022?auto=format&fit=crop&q=80&w=800';
 
   const handleLogout = async () => {
     await logout();
@@ -183,24 +191,33 @@ const Navbar = () => {
                     <div className="space-y-1 text-left w-[200px]">
                       <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Engineering</h4>
                       {servicesMega.engineering.map((s) => (
-                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setHoveredMegaItem({ name: s.name, defaultUrl: s.img })} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
                       ))}
                     </div>
                     <div className="space-y-1 text-left w-[200px]">
                       <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Construction</h4>
                       {servicesMega.construction.map((s) => (
-                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setHoveredMegaItem({ name: s.name, defaultUrl: s.img })} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
                       ))}
                     </div>
                     <div className="space-y-1 text-left w-[180px]">
                       <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Divisions</h4>
                       {servicesMega.others.map((s) => (
-                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setActiveImage(s.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
+                        <Link key={s.name} to={getNavPath(s.path)} onMouseEnter={() => setHoveredMegaItem({ name: s.name, defaultUrl: s.img })} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{s.name}</Link>
                       ))}
                     </div>
                   </div>
                   <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
-                    <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700" />
+                    {isAdminActive ? (
+                      <EditImage
+                        id={`mega_${hoveredMegaItem.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_img`}
+                        defaultUrl={hoveredMegaItem.defaultUrl}
+                        alt="Category Preview"
+                        className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-auto"
+                      />
+                    ) : (
+                      <img src={activePreviewUrl} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 pointer-events-none" />
+                    )}
                   </div>
                 </div>
               )}
@@ -215,12 +232,21 @@ const Navbar = () => {
                     <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-5">Landmark EPC Projects</h4>
                     <div className="grid grid-cols-1">
                       {projectsMega.map((p) => (
-                        <Link key={p.name} to={getNavPath(p.path)} onMouseEnter={() => setActiveImage(p.img)} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
+                        <Link key={p.name} to={getNavPath(p.path)} onMouseEnter={() => setHoveredMegaItem({ name: p.name, defaultUrl: p.img })} className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5">{p.name}</Link>
                       ))}
                     </div>
                   </div>
                   <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
-                    <img src={activeImage} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700" />
+                    {isAdminActive ? (
+                      <EditImage
+                        id={`mega_${hoveredMegaItem.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_img`}
+                        defaultUrl={hoveredMegaItem.defaultUrl}
+                        alt="Category Preview"
+                        className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-auto"
+                      />
+                    ) : (
+                      <img src={activePreviewUrl} alt="Category Preview" className="absolute inset-0 w-full h-full object-cover transition-all duration-700 pointer-events-none" />
+                    )}
                   </div>
                 </div>
               )}

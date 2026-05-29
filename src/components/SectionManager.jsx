@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAdmin } from '../context/AdminContext';
 import { supabase } from '../lib/supabase';
 import { Settings, Plus, Trash2, GripVertical, X, Loader2 } from 'lucide-react';
@@ -6,6 +7,7 @@ import { Settings, Plus, Trash2, GripVertical, X, Loader2 } from 'lucide-react';
 export const SectionManager = ({
   pageName,
   type,
+  idPrefix,
   items,
   label = "Manage Section",
   renderItemLabel, // e.g. (item) => item.name
@@ -13,7 +15,7 @@ export const SectionManager = ({
   wrapperClassName = "absolute top-4 right-4 z-50",
   sectionno
 }) => {
-  const { isAdminActive } = useAdmin();
+  const { isAdminActive, getContent } = useAdmin();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [draggedIdx, setDraggedIdx] = useState(null);
@@ -43,13 +45,13 @@ export const SectionManager = ({
 
     // Save sequence to DB
     const updates = newItems.map((item, idx) => ({
-      id: item.dbId || `${item.id}_img`, // Depending on how parent maps it
+      id: item.numericId, // numeric Primary Key
       sequence: idx + 1
     }));
 
     try {
       await Promise.all(
-        updates.map(u => 
+        updates.map(u =>
           supabase.from('content').update({ sequence: u.sequence }).eq('id', u.id)
         )
       );
@@ -65,13 +67,13 @@ export const SectionManager = ({
   const handleAdd = async () => {
     setLoading(true);
     const shortId = Math.random().toString(36).substring(2, 8);
-    const baseId = `${type}_${shortId}`;
+    const baseId = `${idPrefix || pageName}_${shortId}`;
     const newSequence = items.length + 1;
 
     try {
       // We only insert the image row as the "anchor" row. Text rows get created automatically when Edited inline.
       const insertData = {
-        id: `${baseId}_img`,
+        element: `${baseId}_img`,
         pagename: pageName,
         type: type,
         status: 'published',
@@ -96,10 +98,45 @@ export const SectionManager = ({
     setLoading(true);
     try {
       const baseId = item.dbId ? item.dbId.replace('_img', '') : item.id;
-      
-      // Delete the image anchor and all associated text fields
-      await supabase.from('content').delete().like('id', `${baseId}%`);
-      
+
+      // 1. Scan for all related content rows matching the prefix to purge any custom uploaded image files in storage
+      const { data: relatedRows, error: fetchError } = await supabase
+        .from('content')
+        .select('url')
+        .like('element', `${baseId}%`);
+
+      if (!fetchError && relatedRows && relatedRows.length > 0) {
+        const filenamesToPurge = [];
+        relatedRows.forEach(row => {
+          if (row.url && row.url.includes('/storage/v1/object/public/site-assets/')) {
+            const filename = row.url.split('/public/site-assets/')[1];
+            if (filename) {
+              filenamesToPurge.push(filename);
+            }
+          }
+        });
+
+        // Also check direct item image/img/url values as fallback
+        const itemUrl = item.image || item.img || item.url;
+        if (itemUrl && itemUrl.includes('/storage/v1/object/public/site-assets/')) {
+          const filename = itemUrl.split('/public/site-assets/')[1];
+          if (filename && !filenamesToPurge.includes(filename)) {
+            filenamesToPurge.push(filename);
+          }
+        }
+
+        if (filenamesToPurge.length > 0) {
+          try {
+            await supabase.storage.from('site-assets').remove(filenamesToPurge);
+          } catch (storageErr) {
+            console.warn("Storage cleanup failed for some files:", storageErr);
+          }
+        }
+      }
+
+      // 2. Delete the database image anchor and all associated text fields
+      await supabase.from('content').delete().like('element', `${baseId}%`);
+
       await onUpdate();
     } catch (err) {
       console.error(err);
@@ -122,11 +159,11 @@ export const SectionManager = ({
       </div>
 
       {/* ── Dashboard Modal ── */}
-      {isOpen && (
+      {isOpen && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm pointer-events-auto overflow-y-auto">
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white text-charcoal max-w-3xl w-full p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-100 flex flex-col animate-in fade-in zoom-in-95 duration-300"
+            className="bg-white text-charcoal max-w-3xl w-full p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-100 flex flex-col animate-in fade-in zoom-in-95 duration-300 relative"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-5 mb-6">
@@ -150,38 +187,59 @@ export const SectionManager = ({
 
             {/* Item List */}
             <div className="space-y-3 mb-8 max-h-[60vh] overflow-y-auto pr-2">
-              {items.map((item, i) => (
-                <div
-                  key={item.id || item.dbId || i}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, i)}
-                  onDragEnd={handleDragEnd}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => handleDrop(e, i)}
-                  className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-primary-red/30 transition-colors group cursor-grab active:cursor-grabbing"
-                >
-                  <GripVertical size={18} className="text-gray-300 group-hover:text-gray-500" />
-                  
-                  {item.img && (
-                    <img src={item.img} alt="Thumb" className="w-12 h-12 rounded object-cover border border-gray-100" />
-                  )}
-                  
-                  <div className="flex-1">
-                    <div className="font-bold text-sm uppercase tracking-wide text-charcoal">
-                      {renderItemLabel(item)}
-                    </div>
-                  </div>
+              {items.map((item, i) => {
+                const baseId = item.baseId || item.id || (item.dbId ? item.dbId.replace('_img', '') : null);
+                
+                // Dynamically resolve image in real-time from cache
+                const resolvedImg = baseId ? (
+                  getContent(`${baseId}_image`) || 
+                  getContent(`${baseId}_img`) || 
+                  item.image || 
+                  item.img || 
+                  item.url
+                ) : (item.image || item.img || item.url);
 
-                  <button
-                    onClick={() => handleDelete(item)}
-                    className="p-2 text-gray-400 hover:text-primary-red hover:bg-red-50 rounded transition-colors focus:outline-none"
-                    title="Delete Item"
+                // Dynamically resolve name/title in real-time from cache
+                const resolvedLabel = baseId ? (
+                  getContent(`${baseId}_name`) || 
+                  getContent(`${baseId}_title`) || 
+                  getContent(`${baseId}_headline`) || 
+                  renderItemLabel(item)
+                ) : renderItemLabel(item);
+
+                return (
+                  <div
+                    key={item.id || item.dbId || i}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, i)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, i)}
+                    className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-primary-red/30 transition-colors group cursor-grab active:cursor-grabbing"
                   >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-              
+                    <GripVertical size={18} className="text-gray-300 group-hover:text-gray-500" />
+
+                    {resolvedImg && (
+                      <img src={resolvedImg} alt="Thumb" className="w-12 h-12 rounded object-cover border border-gray-100" />
+                    )}
+
+                    <div className="flex-1">
+                      <div className="font-bold text-sm uppercase tracking-wide text-charcoal">
+                        {resolvedLabel}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDelete(item)}
+                      className="p-2 text-gray-400 hover:text-primary-red hover:bg-red-50 rounded transition-colors focus:outline-none"
+                      title="Delete Item"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                );
+              })}
+
               {items.length === 0 && (
                 <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-lg">
                   <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No items found.</p>
@@ -205,12 +263,13 @@ export const SectionManager = ({
                 Close Manager
               </button>
             </div>
-            
+
             <p className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-5">
               To edit text and images, close this manager and double-click the content directly on the page.
             </p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

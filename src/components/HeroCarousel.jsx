@@ -21,12 +21,21 @@ const HeroCarousel = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [slides, setSlides] = useState(DEFAULT_SLIDES);
 
+  // Clamp current index whenever slides array changes (add/delete)
+  useEffect(() => {
+    setCurrent((prev) => {
+      if (slides.length === 0) return 0;
+      if (prev >= slides.length) return slides.length - 1;
+      return prev;
+    });
+  }, [slides]);
+
   // Fetch slide image rows from Supabase, build slides list
   useEffect(() => {
     const fetchSlides = async () => {
       const { data: imgRows } = await supabase
         .from('content')
-        .select('id, url, position, sequence')
+        .select('id,element, url, position, sequence')
         .eq('pagename', 'home')
         .eq('sectionno', 1)
         .eq('type', 'image')
@@ -38,18 +47,19 @@ const HeroCarousel = () => {
       }
 
       const textIds = imgRows.flatMap(r => {
-        const base = r.id.replace('_img', '');
+        const base = r.element.replace('_img', '');
         return [`${base}_title`, `${base}_category`, `${base}_statement`];
       });
-      const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+      const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
       const textMap = {};
       (textRows || []).forEach(r => { textMap[r.id] = r.url; });
 
       setSlides(imgRows.map(row => {
-        const base = row.id.replace('_img', '');
+        const base = row.element.replace('_img', '');
         return {
           id: base,
-          dbId: row.id,
+          dbId: row.element,
+          numericId: row.id,
           image: row.url,
           objectPosition: row.position || 'center',
           link: '/projects',
@@ -62,14 +72,17 @@ const HeroCarousel = () => {
     fetchSlides();
   }, []);
 
-  const next = () => setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  const prev = () => setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  const total = slides.length;
+  const next = () => setCurrent((prev) => (total === 0 ? 0 : prev >= total - 1 ? 0 : prev + 1));
+  const prevSlide = () => setCurrent((prev) => (total === 0 ? 0 : prev === 0 ? total - 1 : prev - 1));
 
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(next, 8000);
+    if (isPaused || total === 0) return;
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev >= total - 1 ? 0 : prev + 1));
+    }, 8000);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, total]);
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-charcoal">
@@ -78,34 +91,44 @@ const HeroCarousel = () => {
       <SectionManager
         pageName="home"
         type="image"
+        idPrefix="hero_slide"
         sectionno={1}
         items={slides}
         label="Manage Hero Slides"
         wrapperClassName="absolute top-40 right-6 z-50"
         renderItemLabel={(item) => item.title || 'Hero Slide'}
         onUpdate={() => {
-          // hacky way to force fetch without dependency loop
           supabase
             .from('content')
-            .select('id, url, position, sequence')
+            .select('id, element, url, position, sequence')
             .eq('pagename', 'home')
             .eq('sectionno', 1)
             .eq('type', 'image')
             .order('sequence')
             .then(({ data: imgRows }) => {
-               if (!imgRows || imgRows.length === 0) { setSlides([]); return; }
-               const textIds = imgRows.flatMap(r => { const base = r.id.replace('_img', ''); return [`${base}_title`, `${base}_category`, `${base}_statement`]; });
-               supabase.from('content').select('id, url').in('id', textIds).then(({ data: textRows }) => {
-                 const textMap = {};
-                 (textRows || []).forEach(r => { textMap[r.id] = r.url; });
-                 setSlides(imgRows.map(row => {
-                   const base = row.id.replace('_img', '');
-                   return {
-                     id: base, dbId: row.id, image: row.url, objectPosition: row.position || 'center', link: '/projects',
-                     title: textMap[`${base}_title`] || 'Slide Title', category: textMap[`${base}_category`] || 'Category', statement: textMap[`${base}_statement`] || 'Slide Statement',
-                   };
-                 }));
-               });
+              if (!imgRows || imgRows.length === 0) { setSlides([]); return; }
+              const textIds = imgRows.flatMap(r => {
+                const base = r.element.replace('_img', '');
+                return [`${base}_title`, `${base}_category`, `${base}_statement`];
+              });
+              supabase.from('content').select('element, url').in('element', textIds).then(({ data: textRows }) => {
+                const textMap = {};
+                (textRows || []).forEach(r => { textMap[r.element] = r.url; });
+                setSlides(imgRows.map(row => {
+                  const base = row.element.replace('_img', '');
+                  return {
+                    id: base,
+                    dbId: row.element,
+                    numericId: row.id,
+                    image: row.url,
+                    objectPosition: row.position || 'center',
+                    link: '/projects',
+                    title: textMap[`${base}_title`] || 'Slide Title',
+                    category: textMap[`${base}_category`] || 'Category',
+                    statement: textMap[`${base}_statement`] || 'Slide Statement',
+                  };
+                }));
+              });
             });
         }}
       />
@@ -127,7 +150,7 @@ const HeroCarousel = () => {
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === current ? "opacity-100" : "opacity-0"
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === current ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
             }`}
         >
           {/* Vignette Overlay */}
@@ -137,7 +160,7 @@ const HeroCarousel = () => {
           {/* Image */}
           <div className="absolute inset-0 z-0">
             <EditImage
-              id={slide.dbId || `${slide.id}_img`}
+              id={`${slide.id}_img`}
               defaultUrl={slide.image}
               alt={slide.title || ''}
               style={{ objectPosition: slide.objectPosition || 'center' }}
@@ -167,7 +190,7 @@ const HeroCarousel = () => {
       {/* Navigation Controls */}
       <button
         type="button"
-        onClick={prev}
+        onClick={prevSlide}
         aria-label="Previous slide"
         className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-30 group flex items-center text-white/50 hover:text-white transition-colors"
       >
@@ -182,9 +205,9 @@ const HeroCarousel = () => {
         <ChevronRight size={40} className="group-hover:translate-x-1 transition-transform" />
       </button>
 
-      {/* Slide counter — bottom right */}
-      <div className="absolute bottom-6 right-12 z-30 text-white/40 font-black text-xs uppercase tracking-widest flex items-center gap-4 select-none">
-        {isAdminActive && (
+      {/* Slide counter — bottom right (admin only) */}
+      {isAdminActive && (
+        <div className="absolute bottom-6 right-12 z-30 text-white/40 font-black text-xs uppercase tracking-widest flex items-center gap-4 select-none">
           <button
             type="button"
             onClick={() => setIsPaused(!isPaused)}
@@ -193,18 +216,18 @@ const HeroCarousel = () => {
           >
             {isPaused ? <Play size={10} fill="white" /> : <Pause size={10} fill="white" />}
           </button>
-        )}
-        <span>
-          {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
-        </span>
-      </div>
+          <span>
+            {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
+          </span>
+        </div>
+      )}
 
       {/* Progress Segments — inset from edges, one per slide */}
       <div className="absolute bottom-4 left-12 right-12 md:left-24 md:right-24 z-40 flex gap-1.5">
         {slides.map((_, i) => (
           <div
             key={i}
-            className="flex-1 h-[2px] rounded-full transition-colors duration-300"
+            className="flex-1 h-[3.5px] rounded-full transition-colors duration-300"
             style={{ backgroundColor: i === current ? '#CC0000' : 'rgba(255,255,255,0.25)' }}
           />
         ))}

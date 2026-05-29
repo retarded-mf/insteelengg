@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { X, Check, Cpu, Hammer } from 'lucide-react';
+import { EditText } from './Editable';
 
-const ServiceDrawer = ({ isOpen, onClose, service }) => {
+const ServiceDrawer = ({ isOpen, onClose, service, rawTitle }) => {
   // Prevent background scrolling when drawer is open
   useEffect(() => {
     if (isOpen) {
@@ -17,6 +18,7 @@ const ServiceDrawer = ({ isOpen, onClose, service }) => {
   if (!service) return null;
 
   const isEngineering = service.techStack !== undefined;
+  const keyBase = `whatwedo_service_${rawTitle.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
 
   return (
     <>
@@ -41,7 +43,7 @@ const ServiceDrawer = ({ isOpen, onClose, service }) => {
               {isEngineering ? 'Engineering Spec' : 'Construction Capability'}
             </span>
             <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter leading-none text-charcoal">
-              {service.title}
+              <EditText id={`${keyBase}_title`} defaultValue={rawTitle} />
             </h3>
           </div>
           <button
@@ -62,7 +64,7 @@ const ServiceDrawer = ({ isOpen, onClose, service }) => {
               <Cpu size={12} className="text-primary-red" /> Operational Overview
             </h4>
             <p className="text-gray-600 text-[15px] md:text-[16px] leading-loose font-semibold tracking-wide">
-              {service.description}
+              <EditText id={`${keyBase}_desc`} defaultValue={service.description} isTextArea={true} />
             </p>
           </div>
 
@@ -79,7 +81,9 @@ const ServiceDrawer = ({ isOpen, onClose, service }) => {
                     className="flex items-start gap-3.5 text-[14px] md:text-[15px] text-gray-700 font-bold leading-relaxed tracking-wide"
                   >
                     <span className="w-1.5 h-1.5 bg-primary-red rounded-full mt-2.5 shrink-0 animate-pulse" />
-                    <span>{item}</span>
+                    <span>
+                      <EditText id={`${keyBase}_deliv_${i}`} defaultValue={item} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -97,7 +101,7 @@ const ServiceDrawer = ({ isOpen, onClose, service }) => {
                   key={i}
                   className="px-3.5 py-1.5 bg-blue-grey text-charcoal border border-gray-200/40 text-[12px] font-black uppercase tracking-wider rounded transition-all duration-300 hover:border-primary-red hover:text-primary-red hover:bg-primary-red/5"
                 >
-                  {tech}
+                  <EditText id={`${keyBase}_tech_${i}`} defaultValue={tech} />
                 </span>
               ))}
             </div>

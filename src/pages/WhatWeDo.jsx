@@ -156,7 +156,7 @@ const WhatWeDo = () => {
                   <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mb-8">
                     <EditText id="whatwedo_barricading_spec" defaultValue="₹1–100 Cr. project scale · BMC / MMRDA aligned" />
                   </p>
-                  <Link to={isAdminActive ? "#" : "/products/barricading"} onClick={isAdminActive ? (e) => e.preventDefault() : undefined} className="btn-red inline-flex items-center">
+                  <Link to={isAdminActive ? "/admin?adminTab=barricading" : "/products/barricading"} className="btn-red inline-flex items-center">
                     Explore Barricading <ExternalLink size={20} className="ml-2" />
                   </Link>
                </div>

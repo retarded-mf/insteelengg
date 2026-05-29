@@ -3,6 +3,7 @@ import { ArrowRight, Calendar, User } from 'lucide-react';
 import { EditText, EditImage } from '../components/Editable';
 import { SectionManager } from '../components/SectionManager';
 import { useSectionData } from '../hooks/useSectionData';
+import { useAdmin } from '../context/AdminContext';
 
 const defaultPosts = [
   {
@@ -28,36 +29,55 @@ const defaultPosts = [
   }
 ];
 
-const BlogPost = ({ post, index }) => (
-  <div className="group bg-white border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-on-scroll">
-    <div className="h-64 overflow-hidden relative">
-      <EditImage id={`${post.baseId || 'blog_post_'+index}_image`} defaultUrl={post.image} alt={post.title || 'Post'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-      <div className="absolute top-4 left-4 z-20">
-        <span className="bg-primary-red text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1">
-          <EditText id={`${post.baseId || 'blog_post_'+index}_category`} defaultValue={post.category || 'Category'} />
-        </span>
+const BlogPost = ({ post, index, isAdminActive }) => {
+  const postLink = post.link || '#';
+
+  return (
+    <div className="group bg-white border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-on-scroll">
+      <div className="h-64 overflow-hidden relative">
+        <EditImage id={`${post.baseId || 'blog_post_'+index}_image`} defaultUrl={post.image} alt={post.title || 'Post'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <div className="absolute top-4 left-4 z-20">
+          <span className="bg-primary-red text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1">
+            <EditText id={`${post.baseId || 'blog_post_'+index}_category`} defaultValue={post.category || 'Category'} />
+          </span>
+        </div>
+      </div>
+      <div className="p-8">
+        <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 space-x-4">
+          <span className="flex items-center"><Calendar size={14} className="mr-1.5" /> <EditText id={`${post.baseId || 'blog_post_'+index}_date`} defaultValue={post.date || 'Date'} /></span>
+          <span className="flex items-center"><User size={14} className="mr-1.5" /> Admin</span>
+        </div>
+        <h3 className="text-2xl font-extrabold text-charcoal mb-4 line-clamp-2 hover:text-primary-red transition-colors cursor-pointer uppercase">
+          <a href={postLink} target="_blank" rel="noopener noreferrer">
+            <EditText id={`${post.baseId || 'blog_post_'+index}_title`} defaultValue={post.title || 'Post Title'} />
+          </a>
+        </h3>
+        <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 italic">
+          <EditText id={`${post.baseId || 'blog_post_'+index}_excerpt`} defaultValue={post.excerpt || 'Post excerpt.'} isTextArea={true} />
+        </p>
+        <a 
+          href={postLink} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="inline-flex items-center text-primary-red font-bold uppercase tracking-widest text-xs group/link"
+        >
+          Read More <ArrowRight size={16} className="ml-2 group-hover/link:translate-x-2 transition-transform" />
+        </a>
+
+        {isAdminActive && (
+          <div className="mt-6 pt-4 border-t border-gray-100 text-[10px] text-gray-400 font-bold uppercase tracking-wider flex flex-col gap-1">
+            <span>External / Article URL Link:</span>
+            <EditText id={`${post.baseId || 'blog_post_'+index}_link`} defaultValue={post.link || '#'} className="text-primary-red" />
+          </div>
+        )}
       </div>
     </div>
-    <div className="p-8">
-      <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 space-x-4">
-        <span className="flex items-center"><Calendar size={14} className="mr-1.5" /> <EditText id={`${post.baseId || 'blog_post_'+index}_date`} defaultValue={post.date || 'Date'} /></span>
-        <span className="flex items-center"><User size={14} className="mr-1.5" /> Admin</span>
-      </div>
-      <h3 className="text-2xl font-extrabold text-charcoal mb-4 line-clamp-2 hover:text-primary-red transition-colors cursor-pointer uppercase">
-        <EditText id={`${post.baseId || 'blog_post_'+index}_title`} defaultValue={post.title || 'Post Title'} />
-      </h3>
-      <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 italic">
-        <EditText id={`${post.baseId || 'blog_post_'+index}_excerpt`} defaultValue={post.excerpt || 'Post excerpt.'} isTextArea={true} />
-      </p>
-      <button className="flex items-center text-primary-red font-bold uppercase tracking-widest text-xs group/link">
-        Read More <ArrowRight size={16} className="ml-2 group-hover/link:translate-x-2 transition-transform" />
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 const Blog = () => {
   const { items: posts, refetch } = useSectionData('blog', 'blog_post', defaultPosts);
+  const { isAdminActive } = useAdmin();
 
   return (
     <div className="bg-white min-h-screen">
@@ -86,7 +106,7 @@ const Blog = () => {
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {posts.map((post, i) => (
-            <BlogPost key={post.dbId || i} index={i} post={post} />
+            <BlogPost key={post.dbId || i} index={i} post={post} isAdminActive={isAdminActive} />
           ))}
         </div>
         {posts.length === 0 && (

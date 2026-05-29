@@ -16,11 +16,22 @@ const PROJECT_CATEGORIES = [
 
 const HERO_POSITIONS = ['center', 'top', 'bottom', 'left', 'right', 'center 20%', 'center 30%', 'center 40%'];
 
-// Upload image to site-assets and return public URL
+import { convertToWebp } from '../lib/convertToWebp';
+
+// Upload image to site-assets — converts to WebP first, then uploads
 const uploadImage = async (file, id) => {
-  const ext = file.name.split('.').pop();
+  let uploadBlob = file;
+  let ext = file.name.split('.').pop();
+
+  try {
+    uploadBlob = await convertToWebp(file);
+    ext = 'webp';
+  } catch (err) {
+    console.warn('WebP conversion failed, uploading original:', err);
+  }
+
   const path = `${id}.${ext}`;
-  const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
+  const { error } = await supabase.storage.from('site-assets').upload(path, uploadBlob, { upsert: true });
   if (error) throw error;
   const { data } = supabase.storage.from('site-assets').getPublicUrl(path);
   return data.publicUrl;

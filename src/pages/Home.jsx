@@ -87,7 +87,7 @@ const Home = () => {
                   id="home_whoweare_image"
                   defaultUrl="https://images.unsplash.com/photo-1541888941259-79273ceb0022?auto=format&fit=crop&q=80&w=1200"
                   alt="Who We Are"
-                  className="w-full h-[700px] object-cover shadow-2xl grayscale group-hover:grayscale-0 transition-all duration-1000"
+                  className="w-full h-[700px] object-cover shadow-2xl group-hover:scale-[1.03] transition-all duration-1000"
                 />
               </div>
             </div>
@@ -100,7 +100,7 @@ const Home = () => {
       {/* Section 6: Featured Projects */}
       <section className="py-32 bg-white relative overflow-hidden">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-          <div className="mb-24 reveal-on-scroll flex items-end justify-between">
+          <div className="mb-24 reveal-on-scroll flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">
                 <EditText id="home_projects_tag" defaultValue="Archive" />
@@ -116,25 +116,25 @@ const Home = () => {
               label="Manage Featured Projects"
               renderItemLabel={(item) => item.name || 'Project'}
               onUpdate={refetchProjects}
-              wrapperClassName=""
+              wrapperClassName="shrink-0"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative">
             {featuredProjects.map((proj, i) => (
               <div key={proj.dbId || i} className="reveal-on-scroll group">
                 <div className="h-[500px] overflow-hidden mb-10 relative">
-                  <EditImage id={`${proj.baseId || 'home_featured_project_' + i}_image`} defaultUrl={proj.image} alt={proj.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <EditImage id={`${proj.baseId || 'home_featured_project_' + i}_image`} defaultUrl={proj.image} alt={proj.name} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </div>
-                <h3 className="text-charcoal font-black text-3xl mb-2 uppercase tracking-tighter">
+                <h3 className="text-charcoal font-black text-3xl mb-1 uppercase tracking-tighter">
                   <EditText id={`${proj.baseId || 'home_featured_project_' + i}_name`} defaultValue={proj.name} />
                 </h3>
+                <p className="text-gray-400 text-[18px] font-black uppercase tracking-widest">
+                  <EditText id={`${proj.baseId || 'home_featured_project_' + i}_loc`} defaultValue={proj.loc} /> — Site Archive
+                </p>
                 <div className="text-primary-red text-[11px] font-black uppercase tracking-[0.3em] mb-4">
                   <EditText id={`${proj.baseId || 'home_featured_project_' + i}_type`} defaultValue={proj.type} />
                 </div>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">
-                  <EditText id={`${proj.baseId || 'home_featured_project_' + i}_loc`} defaultValue={proj.loc} /> — Site Archive
-                </p>
               </div>
             ))}
           </div>

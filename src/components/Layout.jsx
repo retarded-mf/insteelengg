@@ -11,12 +11,23 @@ const Layout = ({ children }) => {
   const query = new URLSearchParams(search);
   const currentTab = query.get('tab');
 
-  // Bypass standard layout for login screen or dashboard
+  // Bypass standard layout for login screen, dashboard, or 404 Not Found pages
   const isLoginScreen = pathname === '/admin' && !isAdminActive;
   const isDashboard = pathname === '/admin' && isAdminActive && currentTab === 'dashboard';
+  
+  const knownRoutes = [
+    '/', '/about', '/team', '/awards', '/clients', '/what-we-do', '/projects',
+    '/blog', '/events', '/contact', '/products/barricading', '/products/barricading/mandates', '/admin', '/news',
+    '/investor', '/annual-report', '/careers'
+  ];
+  const isNotFound = !knownRoutes.includes(pathname);
 
   if (isLoginScreen || isDashboard) {
     return <div className="min-h-screen bg-charcoal flex flex-col">{children}</div>;
+  }
+
+  if (isNotFound) {
+    return <div className="min-h-screen bg-white flex flex-col">{children}</div>;
   }
 
   return (

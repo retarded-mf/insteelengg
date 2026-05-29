@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAdmin } from '../context/AdminContext';
 
 export function useSectionData(pageName, type, defaultData = []) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { getContent } = useAdmin();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -11,7 +13,7 @@ export function useSectionData(pageName, type, defaultData = []) {
     // 1. Fetch the "anchor" rows (images or main card objects)
     const { data: mainRows, error } = await supabase
       .from('content')
-      .select('id, url, position, sequence')
+      .select('id, element, url, position, sequence')
       .eq('pagename', pageName)
       .eq('type', type)
       .order('sequence');
@@ -31,7 +33,7 @@ export function useSectionData(pageName, type, defaultData = []) {
           
           // Insert the anchor row
           inserts.push({
-            id: `${baseId}_img`,
+            element: `${baseId}_img`,
             pagename: pageName,
             type: type,
             status: 'published',
@@ -43,7 +45,7 @@ export function useSectionData(pageName, type, defaultData = []) {
           Object.keys(item).forEach(key => {
             if (key !== 'image' && key !== 'id') {
               inserts.push({
-                id: `${baseId}_${key}`,
+                element: `${baseId}_${key}`,
                 pagename: pageName,
                 type: 'text', // Or something else, but text is fine
                 status: 'published',
@@ -58,7 +60,7 @@ export function useSectionData(pageName, type, defaultData = []) {
         // Fetch again after seeding
         const { data: newMainRows } = await supabase
           .from('content')
-          .select('id, url, position, sequence')
+          .select('id, element, url, position, sequence')
           .eq('pagename', pageName)
           .eq('type', type)
           .order('sequence');
@@ -83,7 +85,7 @@ export function useSectionData(pageName, type, defaultData = []) {
 
     // 2. Fetch all sibling text fields for this type in this page
     // By looking up all text fields that start with the base IDs
-    const baseIds = mainRows.map(r => r.id.replace('_img', ''));
+    const baseIds = mainRows.map(r => r.element.replace('_img', ''));
     
     // Supabase .in() max is large, but we can also just fetch all text for this page+type
     // Unfortunately, we didn't always store text with the same `type` (e.g. they might be type='text').
@@ -92,21 +94,22 @@ export function useSectionData(pageName, type, defaultData = []) {
     // Actually, just fetching all content for the page is super fast for a small site.
     const { data: allPageContent } = await supabase
       .from('content')
-      .select('id, url')
+      .select('id, element, url')
       .eq('pagename', pageName);
 
     const textMap = {};
-    (allPageContent || []).forEach(r => { textMap[r.id] = r.url; });
+    (allPageContent || []).forEach(r => { textMap[r.element] = r.url; });
 
     // 3. Assemble
     const built = mainRows.map((row) => {
-      const base = row.id.replace('_img', '');
+      const base = row.element.replace('_img', '');
       
       // We extract all keys that start with `${base}_` from the textMap
       const mappedData = {
         id: base,
-        dbId: row.id,
+        dbId: row.element,
         baseId: base,
+        numericId: row.id,
         image: row.url,
         position: row.position,
       };
@@ -129,5 +132,31 @@ export function useSectionData(pageName, type, defaultData = []) {
     fetchData();
   }, [fetchData]);
 
-  return { items, loading, refetch: fetchData };
+  // Real-time synchronization with active admin edits/cache
+  const activeItems = useMemo(() => {
+    return items.map(item => {
+      const base = item.baseId;
+      const mapped = { ...item };
+      
+      const expectedKeys = new Set([
+        ...Object.keys(item),
+        ...(defaultData && defaultData.length > 0 ? Object.keys(defaultData[0]) : []),
+        'link'
+      ]);
+
+      expectedKeys.forEach(key => {
+        if (key !== 'id' && key !== 'dbId' && key !== 'baseId' && key !== 'position') {
+          const dbKey = key === 'image' ? `${base}_image` : `${base}_${key}`;
+          let resolvedVal = getContent(dbKey, item[key]);
+          if (key === 'image' && resolvedVal === item[key]) {
+            resolvedVal = getContent(`${base}_img`, resolvedVal);
+          }
+          mapped[key] = resolvedVal;
+        }
+      });
+      return mapped;
+    });
+  }, [items, getContent, defaultData]);
+
+  return { items: activeItems, loading, refetch: fetchData };
 }

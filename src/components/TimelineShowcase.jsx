@@ -114,7 +114,7 @@ const timelineData = [
 /* ─── Component ─────────────────────────────────────────── */
 
 const TimelineShowcase = () => {
-  const [activeYear, setActiveYear] = useState('2018');
+  const [activeYear, setActiveYear] = useState('2006');
 
   const activeIndex = timelineData.findIndex((e) => e.year === activeYear);
   const activeEntry = timelineData[activeIndex];
@@ -146,8 +146,8 @@ const TimelineShowcase = () => {
         <div
           key={activeYear}
           className={`animate-in fade-in slide-in-from-bottom-4 duration-500 mb-16 ${activeEntry.projects.length === 1
-              ? 'w-full'
-              : 'grid grid-cols-1 lg:grid-cols-2 gap-4'
+            ? 'w-full'
+            : 'grid grid-cols-1 lg:grid-cols-2 gap-4'
             }`}
         >
           {activeEntry.projects.map((project, i) => (
@@ -227,15 +227,15 @@ const TimelineShowcase = () => {
                   {/* Dot */}
                   <div
                     className={`w-[18px] h-[18px] rounded-full border-2 z-10 transition-all duration-300 ${isActive
-                        ? 'bg-primary-red border-primary-red shadow-[0_0_16px_rgba(204,0,0,0.55)]'
-                        : 'bg-white border-charcoal/20 group-hover:border-primary-red'
+                      ? 'bg-primary-red border-primary-red shadow-[0_0_16px_rgba(204,0,0,0.55)]'
+                      : 'bg-white border-charcoal/20 group-hover:border-primary-red'
                       }`}
                   />
                   {/* Year label — absolutely positioned to not affect button width */}
                   <span
                     className={`absolute top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-black text-[11px] uppercase tracking-widest transition-colors duration-300 ${isActive
-                        ? 'text-primary-red'
-                        : 'text-charcoal/40 group-hover:text-charcoal'
+                      ? 'text-primary-red'
+                      : 'text-charcoal/40 group-hover:text-charcoal'
                       }`}
                   >
                     {entry.year}
