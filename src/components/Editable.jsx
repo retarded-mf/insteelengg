@@ -240,3 +240,49 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
     </div>
   );
 };
+
+/* ─── Inline Editable File Component ──────────────────────── */
+export const EditFileButton = ({ id, defaultUrl, accept = "*/*", label = "Upload File" }) => {
+  const { isAdminActive, getContent, setContent } = useAdmin();
+  const [uploading, setUploading] = useState(false);
+
+  if (!isAdminActive) return null;
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const timestamp = Date.now();
+    const filePath = `${id}_${timestamp}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('site-assets')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('Upload failed:', uploadError.message);
+      alert('File upload failed. Please try again.');
+      setUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from('site-assets').getPublicUrl(filePath);
+    setContent(id, data.publicUrl);
+    setUploading(false);
+  };
+
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      {uploading ? (
+        <span className="text-xs text-primary-red font-bold animate-pulse">Uploading...</span>
+      ) : (
+        <label className="cursor-pointer bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded border border-blue-200 transition-colors">
+          {label}
+          <input type="file" accept={accept} className="hidden" onChange={handleFileUpload} />
+        </label>
+      )}
+    </div>
+  );
+};

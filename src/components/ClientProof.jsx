@@ -1,17 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { EditText } from './Editable';
+import { EditText, EditImage } from './Editable';
 import { useAdmin } from '../context/AdminContext';
 
-const logoTextDefaults = [
-  'TATA',
-  'L&T',
-  'Godrej',
-  'Adani',
-  'TCS',
-  'GMR',
-  'DMRC',
-  'NHAI',
-];
+const logoDefaults = Array(16).fill('/src/assets/images/placeholder-logo.png'); // Will use a missing image fallback or can be overwritten by admin
 
 const quotesDefaults = [
   {
@@ -40,7 +31,7 @@ const ClientProof = () => {
 
   // Load content dynamically from contentCache or default to the static values
   const logos = useMemo(() => {
-    return logoTextDefaults.map((label, i) => getContent(`home_clientproof_logo_${i}`, label));
+    return logoDefaults.map((defaultUrl, i) => getContent(`home_clientproof_logo_img_${i}`, defaultUrl));
   }, [getContent]);
 
   const quotes = useMemo(() => {
@@ -50,8 +41,6 @@ const ClientProof = () => {
       org: getContent(`home_clientproof_quote_org_${i}`, q.org),
     }));
   }, [getContent]);
-
-  const activeQuote = useMemo(() => quotes[active % quotes.length], [quotes, active]);
 
   return (
     <section className="py-24 bg-white border-t border-gray-100">
@@ -69,26 +58,31 @@ const ClientProof = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-stretch">
           <div className="reveal-on-scroll">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {logos.map((label, i) => (
+            <div className="grid grid-cols-4 grid-rows-4 gap-2 h-full">
+              {logos.map((url, i) => (
                 <button
                   key={i}
                   type="button"
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
-                  className={`h-20 border text-sm font-black uppercase tracking-[0.25em] transition-all flex items-center justify-center p-2 ${active === i
-                    ? 'border-primary-red text-primary-red bg-primary-red/5'
-                    : 'border-gray-100 text-charcoal/60 hover:border-primary-red hover:text-primary-red'
+                  className={`h-full border transition-all flex items-center justify-center p-2 relative group overflow-hidden ${active === i
+                    ? 'border-primary-red bg-primary-red/5'
+                    : 'border-gray-100 hover:border-primary-red'
                     }`}
                 >
-                  <EditText id={`home_clientproof_logo_${i}`} defaultValue={logoTextDefaults[i]} />
+                  <EditImage 
+                    id={`home_clientproof_logo_img_${i}`} 
+                    defaultUrl="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?auto=format&fit=crop&q=80&w=150" 
+                    alt={`Client Logo ${i+1}`} 
+                    className={`w-full h-full object-contain filter ${active === i ? 'grayscale-0 opacity-100 scale-110' : 'grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100'} transition-all duration-300`}
+                  />
                 </button>
               ))}
             </div>
           </div>
 
           <div className="reveal-on-scroll">
-            <div className="bg-charcoal text-white p-12 shadow-2xl h-full relative overflow-hidden">
+            <div className="bg-charcoal text-white p-12 shadow-2xl relative overflow-hidden flex flex-col justify-center min-h-[450px] lg:min-h-[500px]">
               <div className="absolute inset-0 bg-primary-red/5 skew-y-3 translate-y-24 transform origin-right animate-pulse" />
               <div className="relative">
                 <div className="text-primary-red text-6xl font-serif leading-none mb-8 opacity-40">“</div>
