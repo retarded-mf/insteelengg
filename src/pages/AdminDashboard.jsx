@@ -162,16 +162,16 @@ const ProjectsSection = () => {
     }
 
     const textIds = imgRows.flatMap(r => {
-      const base = r.id.replace('_img', '');
+      const base = r.element.replace('_img', '');
       return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
     });
 
-    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
     const textMap = {};
-    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+    (textRows || []).forEach(r => { textMap[r.element] = r.url; });
 
     setProjects(imgRows.map((row) => {
-      const base = row.id.replace('_img', '');
+      const base = row.element.replace('_img', '');
       return {
         ...row,
         _base: base,
@@ -187,7 +187,7 @@ const ProjectsSection = () => {
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
   const newBlank = () => ({
-    id: `project_${Date.now()}`,
+    element: `project_${Date.now()}`,
     type: 'card',
     pagename: 'projects',
     pageno: 3,
@@ -196,8 +196,6 @@ const ProjectsSection = () => {
     sequence: (projects.length + 1),
     url: '',
     position: 'center',
-    // extra fields stored as JSON in a single text field isn't ideal —
-    // we store name/location/category/description as separate rows with suffixed IDs
     _name: '',
     _location: '',
     _category: PROJECT_CATEGORIES[0],
@@ -205,13 +203,12 @@ const ProjectsSection = () => {
   });
 
   const handleEdit = async (project) => {
-    // Fetch sibling rows for name/location/category/description
-    const base = project.id.replace(/_img$/, '');
-    const { data: siblings } = await supabase.from('content').select('id, url').in('id', [
+    const base = (project.element || project.id || '').replace(/_img$/, '');
+    const { data: siblings } = await supabase.from('content').select('element, url').in('element', [
       `${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`,
     ]);
     const map = {};
-    (siblings || []).forEach(r => { map[r.id.split('_').pop()] = r.url; });
+    (siblings || []).forEach(r => { map[r.element.split('_').pop()] = r.url; });
     setEditItem({
       ...project,
       _base: base,
@@ -227,12 +224,11 @@ const ProjectsSection = () => {
   const handleSave = async () => {
     if (!editItem) return;
     setSaving(true);
-    const base = editItem._base || editItem.id;
+    const base = editItem._base || editItem.element || editItem.id;
     const imgId = `${base}_img`;
 
-    // Upsert main image row
     await supabase.from('content').upsert({
-      id: imgId,
+      element: imgId,
       type: 'card',
       url: editItem.url,
       position: editItem.position || 'center',
@@ -241,18 +237,17 @@ const ProjectsSection = () => {
       pageno: 3,
       sectionno: 1,
       sequence: editItem.sequence,
-    }, { onConflict: 'id' });
+    }, { onConflict: 'element' });
 
-    // Upsert metadata rows
     const meta = [
-      { id: `${base}_name`, url: editItem._name },
-      { id: `${base}_location`, url: editItem._location },
-      { id: `${base}_category`, url: editItem._category },
-      { id: `${base}_description`, url: editItem._description },
+      { element: `${base}_name`, url: editItem._name },
+      { element: `${base}_location`, url: editItem._location },
+      { element: `${base}_category`, url: editItem._category },
+      { element: `${base}_description`, url: editItem._description },
     ];
     await supabase.from('content').upsert(
       meta.map(m => ({ ...m, type: 'text', status: 'published', pagename: 'projects', pageno: 3, sectionno: 1 })),
-      { onConflict: 'id' }
+      { onConflict: 'element' }
     );
 
     await fetchProjects();
@@ -261,10 +256,10 @@ const ProjectsSection = () => {
   };
 
   const handleDelete = async (project) => {
-    if (!window.confirm(`Remove "${project._name || project.id}" from the portfolio?`)) return;
-    const base = project.id.replace(/_img$/, '');
-    await supabase.from('content').delete().in('id', [
-      project.id, `${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`,
+    if (!window.confirm(`Remove "${project._name || project.element}" from the portfolio?`)) return;
+    const base = (project.element || '').replace(/_img$/, '');
+    await supabase.from('content').delete().in('element', [
+      project.element, `${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`,
     ]);
     await fetchProjects();
   };
@@ -282,7 +277,7 @@ const ProjectsSection = () => {
       setProjects(updated);
 
       await Promise.all(
-        updated.map((proj, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', proj.id))
+        updated.map((proj, i) => supabase.from('content').update({ sequence: i + 1 }).eq('element', proj.element))
       );
     }
     setDragItemIndex(null);
@@ -383,16 +378,16 @@ const HeroSlidesSection = () => {
     }
 
     const textIds = imgRows.flatMap(r => {
-      const base = r.id.replace('_img', '');
+      const base = r.element.replace('_img', '');
       return [`${base}_title`, `${base}_category`, `${base}_statement`];
     });
 
-    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
     const textMap = {};
-    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+    (textRows || []).forEach(r => { textMap[r.element] = r.url; });
 
     setSlides(imgRows.map(row => {
-      const base = row.id.replace('_img', '');
+      const base = row.element.replace('_img', '');
       return {
         ...row,
         _base: base,
@@ -407,17 +402,17 @@ const HeroSlidesSection = () => {
   useEffect(() => { fetchSlides(); }, [fetchSlides]);
 
   const handleEdit = async (slide) => {
-    const base = slide.id.replace(/_img$/, '');
-    const { data: siblings } = await supabase.from('content').select('id, url').in('id', [
+    const base = (slide.element || slide.id || '').replace(/_img$/, '');
+    const { data: siblings } = await supabase.from('content').select('element, url').in('element', [
       `${base}_title`, `${base}_category`, `${base}_statement`,
     ]);
     const map = {};
-    (siblings || []).forEach(r => { map[r.id.split('_').pop()] = r.url; });
+    (siblings || []).forEach(r => { map[r.element.split('_').pop()] = r.url; });
     setEditItem({ ...slide, _base: base, _title: map.title || '', _category: map.category || '', _statement: map.statement || '' });
   };
 
   const handleNew = () => setEditItem({
-    id: `hero_slide_${Date.now()}`,
+    element: `hero_slide_${Date.now()}`,
     type: 'image',
     pagename: 'home',
     position: 'hero',
@@ -432,11 +427,11 @@ const HeroSlidesSection = () => {
   const handleSave = async () => {
     if (!editItem) return;
     setSaving(true);
-    const base = editItem._base || editItem.id;
+    const base = editItem._base || editItem.element || editItem.id;
     const imgId = `${base}_img`;
 
     await supabase.from('content').upsert({
-      id: imgId,
+      element: imgId,
       type: 'image',
       url: editItem.url,
       position: editItem.position || 'center',
@@ -445,13 +440,13 @@ const HeroSlidesSection = () => {
       pageno: 1,
       sectionno: 1,
       sequence: editItem.sequence,
-    }, { onConflict: 'id' });
+    }, { onConflict: 'element' });
 
     await supabase.from('content').upsert([
-      { id: `${base}_title`, url: editItem._title, type: 'text', status: 'published', pagename: 'home', pageno: 1, sectionno: 1 },
-      { id: `${base}_category`, url: editItem._category, type: 'text', status: 'published', pagename: 'home', pageno: 1, sectionno: 1 },
-      { id: `${base}_statement`, url: editItem._statement, type: 'text', status: 'published', pagename: 'home', pageno: 1, sectionno: 1 },
-    ], { onConflict: 'id' });
+      { element: `${base}_title`, url: editItem._title, type: 'text', status: 'published', pagename: 'home', pageno: 1, sectionno: 1 },
+      { element: `${base}_category`, url: editItem._category, type: 'text', status: 'published', pagename: 'home', pageno: 1, sectionno: 1 },
+      { element: `${base}_statement`, url: editItem._statement, type: 'text', status: 'published', pagename: 'home', pageno: 1, sectionno: 1 },
+    ], { onConflict: 'element' });
 
     await fetchSlides();
     setEditItem(null);
@@ -460,8 +455,8 @@ const HeroSlidesSection = () => {
 
   const handleDelete = async (slide) => {
     if (!window.confirm('Remove this hero slide?')) return;
-    const base = slide.id.replace(/_img$/, '');
-    await supabase.from('content').delete().in('id', [slide.id, `${base}_title`, `${base}_category`, `${base}_statement`]);
+    const base = (slide.element || '').replace(/_img$/, '');
+    await supabase.from('content').delete().in('element', [slide.element, `${base}_title`, `${base}_category`, `${base}_statement`]);
     await fetchSlides();
   };
 
@@ -471,7 +466,7 @@ const HeroSlidesSection = () => {
     if (target < 0 || target >= updated.length) return;
     [updated[index], updated[target]] = [updated[target], updated[index]];
     // Update sequences
-    await Promise.all(updated.map((s, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', s.id)));
+    await Promise.all(updated.map((s, i) => supabase.from('content').update({ sequence: i + 1 }).eq('element', s.element)));
     await fetchSlides();
   };
 
@@ -488,7 +483,7 @@ const HeroSlidesSection = () => {
       setSlides(updated);
 
       await Promise.all(
-        updated.map((slide, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', slide.id))
+        updated.map((slide, i) => supabase.from('content').update({ sequence: i + 1 }).eq('element', slide.element))
       );
     }
     setDragItemIndex(null);
@@ -587,16 +582,16 @@ const TeamSection = () => {
     }
 
     const textIds = imgRows.flatMap(r => {
-      const base = r.id.replace('_img', '');
+      const base = r.element.replace('_img', '');
       return [`${base}_name`, `${base}_role`];
     });
 
-    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
     const textMap = {};
-    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+    (textRows || []).forEach(r => { textMap[r.element] = r.url; });
 
     setMembers(imgRows.map(row => {
-      const base = row.id.replace('_img', '');
+      const base = row.element.replace('_img', '');
       return {
         ...row,
         _base: base,
@@ -610,15 +605,15 @@ const TeamSection = () => {
   useEffect(() => { fetchMembers(); }, [fetchMembers]);
 
   const handleEdit = async (member) => {
-    const base = member.id.replace(/_img$/, '');
-    const { data: siblings } = await supabase.from('content').select('id, url').in('id', [`${base}_name`, `${base}_role`]);
+    const base = (member.element || member.id || '').replace(/_img$/, '');
+    const { data: siblings } = await supabase.from('content').select('element, url').in('element', [`${base}_name`, `${base}_role`]);
     const map = {};
-    (siblings || []).forEach(r => { map[r.id.split('_').pop()] = r.url; });
+    (siblings || []).forEach(r => { map[r.element.split('_').pop()] = r.url; });
     setEditItem({ ...member, _base: base, _name: map.name || '', _role: map.role || '' });
   };
 
   const handleNew = () => setEditItem({
-    id: `team_${Date.now()}`,
+    element: `team_${Date.now()}`,
     type: 'team',
     pagename: 'team',
     status: 'published',
@@ -631,11 +626,11 @@ const TeamSection = () => {
   const handleSave = async () => {
     if (!editItem) return;
     setSaving(true);
-    const base = editItem._base || editItem.id;
+    const base = editItem._base || editItem.element || editItem.id;
     const imgId = `${base}_img`;
 
     await supabase.from('content').upsert({
-      id: imgId,
+      element: imgId,
       type: 'team',
       url: editItem.url,
       status: 'published',
@@ -643,12 +638,12 @@ const TeamSection = () => {
       pageno: 4,
       sectionno: 1,
       sequence: editItem.sequence,
-    }, { onConflict: 'id' });
+    }, { onConflict: 'element' });
 
     await supabase.from('content').upsert([
-      { id: `${base}_name`, url: editItem._name, type: 'text', status: 'published', pagename: 'team', pageno: 4, sectionno: 1 },
-      { id: `${base}_role`, url: editItem._role, type: 'text', status: 'published', pagename: 'team', pageno: 4, sectionno: 1 },
-    ], { onConflict: 'id' });
+      { element: `${base}_name`, url: editItem._name, type: 'text', status: 'published', pagename: 'team', pageno: 4, sectionno: 1 },
+      { element: `${base}_role`, url: editItem._role, type: 'text', status: 'published', pagename: 'team', pageno: 4, sectionno: 1 },
+    ], { onConflict: 'element' });
 
     await fetchMembers();
     setEditItem(null);
@@ -656,9 +651,9 @@ const TeamSection = () => {
   };
 
   const handleDelete = async (member) => {
-    if (!window.confirm(`Remove "${member._name || member.id}" from the team?`)) return;
-    const base = member.id.replace(/_img$/, '');
-    await supabase.from('content').delete().in('id', [member.id, `${base}_name`, `${base}_role`]);
+    if (!window.confirm(`Remove "${member._name || member.element}" from the team?`)) return;
+    const base = (member.element || '').replace(/_img$/, '');
+    await supabase.from('content').delete().in('element', [member.element, `${base}_name`, `${base}_role`]);
     await fetchMembers();
   };
 
@@ -676,7 +671,7 @@ const TeamSection = () => {
       setMembers(updated);
 
       await Promise.all(
-        updated.map((m, i) => supabase.from('content').update({ sequence: i + 1 }).eq('id', m.id))
+        updated.map((m, i) => supabase.from('content').update({ sequence: i + 1 }).eq('element', m.element))
       );
     }
     setDragItemIndex(null);

@@ -17,7 +17,7 @@ const TheTeam = () => {
   const fetchTeam = async () => {
     const { data: imgRows } = await supabase
       .from('content')
-      .select('id, url, sequence')
+      .select('id, element, url, sequence')
       .eq('pagename', 'team')
       .eq('type', 'team')
       .order('sequence');
@@ -28,18 +28,19 @@ const TheTeam = () => {
     }
 
     const textIds = imgRows.flatMap(r => {
-      const base = r.id.replace('_img', '');
+      const base = r.element.replace('_img', '');
       return [`${base}_name`, `${base}_role`];
     });
-    const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
+    const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
     const textMap = {};
-    (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+    (textRows || []).forEach(r => { textMap[r.element] = r.url; });
 
     setTeam(imgRows.map(row => {
-      const base = row.id.replace('_img', '');
+      const base = row.element.replace('_img', '');
       return {
         id: base,
-        dbId: row.id,
+        dbId: row.element,
+        numericId: row.id,
         name: textMap[`${base}_name`] || 'New Team Member',
         role: textMap[`${base}_role`] || 'Role',
         img: row.url,

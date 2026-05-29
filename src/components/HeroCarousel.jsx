@@ -52,7 +52,7 @@ const HeroCarousel = () => {
       });
       const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
       const textMap = {};
-      (textRows || []).forEach(r => { textMap[r.id] = r.url; });
+      (textRows || []).forEach(r => { textMap[r.element] = r.url; });
 
       setSlides(imgRows.map(row => {
         const base = row.element.replace('_img', '');

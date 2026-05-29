@@ -2,18 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { X, Globe, Calendar, Weight, Settings } from 'lucide-react';
-import { projects as DEFAULT_PROJECTS, categories } from '../data/projects';
+import { projects as DEFAULT_PROJECTS } from '../data/projects';
 import { supabase } from '../lib/supabase';
 import { EditText, EditImage } from './Editable';
 import { SectionManager } from './SectionManager';
-
-/* ─── Premium Interactive Project Modal ────────────────────── */
 import { useAdmin } from '../context/AdminContext';
 
 /* ─── Premium Interactive Project Modal ────────────────────── */
 const ProjectModal = ({ project, onClose }) => {
-  const { getContent, isAdminActive } = useAdmin();
-
   // Prevent background scrolling when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -56,14 +52,9 @@ const ProjectModal = ({ project, onClose }) => {
     return defaultSpecs;
   };
 
-  const defaultSpecs = getSpecs(project);
-  const specs = defaultSpecs.map((spec, index) => ({
-    label: getContent(`${project.baseId}_spec_label_${index}`, spec.label),
-    value: getContent(`${project.baseId}_spec_value_${index}`, spec.value),
-    icon: spec.icon
-  }));
+  const specs = getSpecs(project);
 
-  // Thematic gallery selector — loads from DB or default URLs
+  // Thematic gallery selector
   const getGallery = (p) => {
     const defaultGallery = [
       p.image,
@@ -72,43 +63,26 @@ const ProjectModal = ({ project, onClose }) => {
       "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800",
     ];
 
-    let baseGallery = defaultGallery;
-
     if (p.category.includes("Airports") || p.category.includes("Stations")) {
-      baseGallery = [
+      return [
         p.image,
         "https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=800",
         "https://images.unsplash.com/photo-1473876637954-4b493d59fd97?auto=format&fit=crop&q=80&w=800",
         "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800",
       ];
     } else if (p.category.includes("High-Rise") || p.category.includes("Composite")) {
-      baseGallery = [
+      return [
         p.image,
         "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
         "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800",
         "https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=800",
       ];
     }
-
-    return [
-      getContent(`${p.baseId}_img`, baseGallery[0]),
-      getContent(`${p.baseId}_gallery_1`, baseGallery[1]),
-      getContent(`${p.baseId}_gallery_2`, baseGallery[2]),
-      getContent(`${p.baseId}_gallery_3`, baseGallery[3]),
-    ];
+    return defaultGallery;
   };
 
   const gallery = getGallery(project);
   const [activeImg, setActiveImg] = useState(gallery[0]);
-
-  // Sync activeImg state if database image updates or changes
-  const activeIdx = gallery.indexOf(activeImg) >= 0 ? gallery.indexOf(activeImg) : 0;
-  const currentActiveUrl = gallery[activeIdx];
-
-  // We keep activeImg in sync with the dynamically resolved database value
-  useEffect(() => {
-    setActiveImg(gallery[activeIdx]);
-  }, [currentActiveUrl]);
 
   return createPortal(
     <>
@@ -120,41 +94,41 @@ const ProjectModal = ({ project, onClose }) => {
 
       {/* Modal Dialog */}
       <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8 pointer-events-none">
-        <div className="bg-white text-charcoal w-full max-w-7xl md:h-[750px] max-h-[90vh] rounded-2xl shadow-2xl flex flex-col md:flex-row border border-gray-200 overflow-hidden pointer-events-auto animate-in fade-in zoom-in-95 duration-300">
+        <div className="bg-white text-charcoal w-full max-w-5xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col md:flex-row border border-gray-200 overflow-hidden pointer-events-auto animate-in fade-in zoom-in-95 duration-300">
 
           {/* Left: Content */}
-          <div className="w-full md:w-1/2 overflow-y-auto p-8 md:p-12 flex flex-col justify-between space-y-8 scrollbar-thin h-full">
-            <div className="space-y-8">
+          <div className="w-full md:w-1/2 overflow-y-auto p-8 md:p-10 flex flex-col justify-between space-y-8 scrollbar-thin">
+            <div className="space-y-6">
               <div>
-                <span className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-2.5 block">
+                <span className="text-[10px] text-primary-red font-black uppercase tracking-[0.4em] mb-1.5 block">
                   {project.category}
                 </span>
-                <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-tight text-charcoal">
+                <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter leading-none text-charcoal">
                   {project.name}
                 </h3>
               </div>
 
-              <p className="text-gray-500 text-sm md:text-base leading-loose font-semibold tracking-wide">
-                <EditText id={`${project.baseId}_description`} defaultValue={project.description || "Insteel delivered end-to-end structural steel solutions, implementing millimeters-accurate detailing and optimized connection designs to secure accelerated site erection parameters and achieve a flawless safety coefficient."} isTextArea={true} maxLength={150} />
+              <p className="text-gray-500 text-sm md:text-[15px] leading-loose font-semibold tracking-wide">
+                {project.description || "Insteel delivered end-to-end structural steel solutions, implementing millimeters-accurate detailing and optimized connection designs to secure accelerated site erection parameters and achieve a flawless safety coefficient."}
               </p>
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-4">
                 {specs.map((spec, index) => {
                   const Icon = spec.icon;
                   return (
                     <div
                       key={index}
-                      className="bg-blue-grey/40 border border-gray-200/50 p-5 rounded-xl flex items-center gap-4"
+                      className="bg-blue-grey/40 border border-gray-200/50 p-4 rounded-xl flex items-center gap-3.5"
                     >
-                      <div className="p-2.5 rounded-lg bg-white border border-gray-200/40 text-primary-red shrink-0 shadow-sm">
-                        <Icon size={20} />
+                      <div className="p-2 rounded-lg bg-white border border-gray-200/40 text-primary-red shrink-0 shadow-sm">
+                        <Icon size={18} />
                       </div>
                       <div>
-                        <div className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-0.5">
-                          <EditText id={`${project.baseId}_spec_label_${index}`} defaultValue={defaultSpecs[index].label} />
+                        <div className="text-[9px] text-gray-400 font-black uppercase tracking-wider mb-0.5">
+                          {spec.label}
                         </div>
-                        <div className="text-charcoal font-black text-sm uppercase">
-                          <EditText id={`${project.baseId}_spec_value_${index}`} defaultValue={defaultSpecs[index].value} />
+                        <div className="text-charcoal font-black text-xs uppercase">
+                          {spec.value}
                         </div>
                       </div>
                     </div>
@@ -163,10 +137,10 @@ const ProjectModal = ({ project, onClose }) => {
               </div>
             </div>
 
-            <div className="pt-6">
+            <div className="pt-4">
               <a
                 href="/contact"
-                className="w-full inline-flex items-center justify-center py-4.5 md:py-5 bg-primary-red hover:bg-red-700 text-white font-black uppercase text-xs tracking-[0.3em] rounded-lg transition-all duration-300 shadow-sm focus:outline-none"
+                className="w-full inline-flex items-center justify-center py-4 bg-primary-red hover:bg-red-700 text-white font-black uppercase text-xs tracking-[0.3em] rounded-lg transition-all duration-300 shadow-sm focus:outline-none"
               >
                 Inquire About Project
               </a>
@@ -174,7 +148,7 @@ const ProjectModal = ({ project, onClose }) => {
           </div>
 
           {/* Right: Media & Gallery */}
-          <div className="w-full md:w-1/2 relative bg-gray-50 flex flex-col border-t md:border-t-0 md:border-l border-gray-100 h-[400px] md:h-full">
+          <div className="w-full md:w-1/2 relative bg-gray-50 flex flex-col border-t md:border-t-0 md:border-l border-gray-100 h-[360px] md:h-auto">
             <button
               onClick={onClose}
               aria-label="Close project details"
@@ -185,20 +159,11 @@ const ProjectModal = ({ project, onClose }) => {
 
             {/* Active Display */}
             <div className="flex-1 relative overflow-hidden bg-black">
-              {isAdminActive ? (
-                <EditImage
-                  id={activeIdx === 0 ? `${project.baseId}_img` : `${project.baseId}_gallery_${activeIdx}`}
-                  defaultUrl={activeImg}
-                  alt={`${project.name} active`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src={activeImg}
-                  alt={`${project.name} active`}
-                  className="w-full h-full object-cover transition-all duration-500 animate-in fade-in"
-                />
-              )}
+              <img
+                src={activeImg}
+                alt={`${project.name} active`}
+                className="w-full h-full object-cover transition-all duration-500 animate-in fade-in"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
             </div>
 
@@ -213,7 +178,7 @@ const ProjectModal = ({ project, onClose }) => {
                     : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                 >
-                  <img src={imgUrl} alt="Thumbnail preview" className="w-full h-full object-cover pointer-events-none" />
+                  <img src={imgUrl} alt="Thumbnail preview" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -293,8 +258,8 @@ const FlipCard = ({ project, onViewMore }) => {
                 <EditText id={`${project.baseId}_name`} defaultValue={project.name || 'Project Name'} />
               </h3>
             </div>
-            <p className="text-white/70 text-[14px] leading-loose font-medium line-clamp-6 w-full break-words">
-              <EditText id={`${project.baseId}_description`} defaultValue={project.description || 'Description goes here...'} isTextArea={true} truncate={150} maxLength={150} />
+            <p className="text-white/70 text-[14px] leading-loose font-medium line-clamp-6">
+              <EditText id={`${project.baseId}_description`} defaultValue={project.description || 'Description goes here...'} isTextArea={true} />
             </p>
           </div>
 
@@ -340,92 +305,47 @@ const ProjectGrid = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState('All');
   const [selectedProject, setSelectedProject] = useState(null);
-  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
+  const [projects, setProjects] = useState([]);
   const { getContent, isAdminActive } = useAdmin();
 
   const fetchProjects = useCallback(async () => {
     const { data: imgRows } = await supabase
       .from('content')
-      .select('id, url, position, sequence')
+      .select('id, element, url, position, sequence')
       .eq('pagename', 'projects')
       .eq('type', 'card')
       .order('sequence');
 
-    const processImgRows = async (rows) => {
-      // Fetch all sibling text rows in one query
-      const textIds = rows.flatMap(r => {
-        const base = r.id.replace('_img', '');
-        return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
-      });
-      const { data: textRows } = await supabase.from('content').select('id, url').in('id', textIds);
-      const textMap = {};
-      (textRows || []).forEach(r => { textMap[r.id] = r.url; });
-
-      const built = rows.map((row, i) => {
-        const base = row.id.replace('_img', '');
-        return {
-          id: row.id, // required for React key
-          dbId: row.id, // required for SectionManager
-          baseId: base,
-          name: textMap[`${base}_name`] || 'New Project',
-          location: textMap[`${base}_location`] || 'Location',
-          category: textMap[`${base}_category`] || 'Category',
-          description: textMap[`${base}_description`] || '',
-          image: row.url,
-        };
-      });
-
-      setProjects(built);
-    };
-
     if (!imgRows || imgRows.length === 0) {
-      if (DEFAULT_PROJECTS && DEFAULT_PROJECTS.length > 0) {
-        const inserts = [];
-        DEFAULT_PROJECTS.forEach((item, index) => {
-          const baseId = `card_${Math.random().toString(36).substring(2, 8)}`;
-          
-          inserts.push({
-            id: `${baseId}_img`,
-            pagename: 'projects',
-            type: 'card',
-            status: 'published',
-            sequence: index + 1,
-            url: item.image || ''
-          });
-
-          Object.keys(item).forEach(key => {
-            if (key !== 'image' && key !== 'id') {
-              inserts.push({
-                id: `${baseId}_${key}`,
-                pagename: 'projects',
-                type: 'text',
-                status: 'published',
-                sequence: index + 1,
-                url: String(item[key] || '')
-              });
-            }
-          });
-        });
-
-        await supabase.from('content').insert(inserts);
-        const { data: newImgRows } = await supabase
-          .from('content')
-          .select('id, url, position, sequence')
-          .eq('pagename', 'projects')
-          .eq('type', 'card')
-          .order('sequence');
-        if (newImgRows && newImgRows.length > 0) {
-          await processImgRows(newImgRows);
-        } else {
-          setProjects([]);
-        }
-      } else {
-        setProjects([]);
-      }
+      setProjects([]);
       return;
     }
 
-    await processImgRows(imgRows);
+    const textIds = imgRows.flatMap(r => {
+      const base = r.element.replace('_img', '');
+      return [`${base}_name`, `${base}_location`, `${base}_category`, `${base}_description`];
+    });
+
+    const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
+    const textMap = {};
+    (textRows || []).forEach(r => { textMap[r.element] = r.url; });
+
+    const built = imgRows.map((row) => {
+      const base = row.element.replace('_img', '');
+      return {
+        id: base,
+        dbId: row.element,
+        numericId: row.id,
+        baseId: base,
+        name: textMap[`${base}_name`] || 'New Project',
+        location: textMap[`${base}_location`] || 'Location',
+        category: textMap[`${base}_category`] || 'Category',
+        description: textMap[`${base}_description`] || '',
+        image: row.url,
+      };
+    });
+
+    setProjects(built);
   }, []);
 
   useEffect(() => {
@@ -447,12 +367,15 @@ const ProjectGrid = () => {
     });
   }, [projects, getContent]);
 
-  // Sync category filter and select modal when URL params are present
+  const dynamicCategories = useMemo(() => {
+    const cats = new Set(activeProjects.map(p => p.category).filter(Boolean));
+    return ['All', ...Array.from(cats)];
+  }, [activeProjects]);
+
   useEffect(() => {
     const catParam = searchParams.get('cat');
     if (catParam) {
-      const decodedCat = decodeURIComponent(catParam);
-      setFilter(decodedCat);
+      setFilter(decodeURIComponent(catParam));
     } else {
       setFilter('All');
     }
@@ -460,12 +383,8 @@ const ProjectGrid = () => {
     const projParam = searchParams.get('project');
     if (projParam) {
       const decodedProj = decodeURIComponent(projParam).toLowerCase();
-      const matched = activeProjects.find(
-        (p) => p && p.name && String(p.name).toLowerCase() === decodedProj
-      );
-      if (matched) {
-        setSelectedProject(matched);
-      }
+      const matched = activeProjects.find(p => p && p.name && p.name.toLowerCase() === decodedProj);
+      if (matched) setSelectedProject(matched);
     }
   }, [searchParams, activeProjects]);
 
@@ -506,6 +425,7 @@ const ProjectGrid = () => {
       <SectionManager
         pageName="projects"
         type="card"
+        idPrefix="project"
         items={activeProjects}
         label="Manage Portfolio"
         renderItemLabel={(item) => item.name || 'New Project'}
@@ -513,15 +433,14 @@ const ProjectGrid = () => {
         wrapperClassName="flex justify-center mb-8"
       />
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-12 justify-center">
-        {categories.map((cat) => (
+        {dynamicCategories.map((cat) => (
           <button
             key={cat}
             onClick={() => handleFilterChange(cat)}
             className={`px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all border-2 ${filter === cat
-              ? "bg-primary-red border-primary-red text-white"
-              : "bg-white border-gray-100 text-gray-500 hover:border-primary-red hover:text-primary-red"
+              ? 'bg-primary-red border-primary-red text-white'
+              : 'bg-white border-gray-100 text-gray-500 hover:border-primary-red hover:text-primary-red'
               }`}
           >
             {cat}
@@ -529,7 +448,6 @@ const ProjectGrid = () => {
         ))}
       </div>
 
-      {/* Centered Portfolio Layout — ensures single/odd cards center perfectly */}
       <div className="flex flex-wrap gap-8 justify-center">
         {filteredProjects.map((project) => (
           <div key={project.id} className="w-full lg:w-[calc(50%-16px)] max-w-[580px]">
@@ -538,7 +456,6 @@ const ProjectGrid = () => {
         ))}
       </div>
 
-      {/* Premium Interactive Modal */}
       {selectedProject && (
         <ProjectModal project={selectedProject} onClose={handleCloseModal} />
       )}
