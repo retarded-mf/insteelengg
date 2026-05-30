@@ -3,11 +3,6 @@ import { Link } from 'react-router-dom';
 import { EditText, EditImage } from './Editable';
 import { useAdmin } from '../context/AdminContext';
 
-/* ─── Timeline Data ──────────────────────────────────────────
-   imageProgress = construction / fabrication phase
-   imageFinished = completed / delivered structure
-   stats are marked [placeholder] — swap in real figures
-──────────────────────────────────────────────────────────── */
 const timelineData = [
   {
     year: '2006',
@@ -15,8 +10,7 @@ const timelineData = [
       {
         name: 'Insteel Engineering Founded',
         category: 'Company Milestone',
-        imageFinished:
-          'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=900',
+        imageFinished: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=900',
         stats: [
           { label: 'Core Service', value: 'Steel Design' },
           { label: 'Headquarters', value: 'Mumbai' },
@@ -30,8 +24,7 @@ const timelineData = [
       {
         name: 'First Full EPC Project',
         category: 'First Full EPC Project',
-        imageFinished:
-          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=900',
+        imageFinished: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=900',
         stats: [
           { label: 'Steel Erected', value: '[placeholder] MT' },
           { label: 'Duration', value: '[placeholder] Months' },
@@ -45,8 +38,7 @@ const timelineData = [
       {
         name: 'Gandhinagar Railway Station',
         category: 'Railway Stations',
-        imageFinished:
-          'https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&q=80&w=900',
+        imageFinished: 'https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&q=80&w=900',
         stats: [
           { label: 'Steel Erected', value: '[placeholder] MT' },
           { label: 'Duration', value: '[placeholder] Months' },
@@ -60,8 +52,7 @@ const timelineData = [
       {
         name: 'Madinah Airport',
         category: 'Airports — First International',
-        imageFinished:
-          'https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=900',
+        imageFinished: 'https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=900',
         stats: [
           { label: 'Steel Erected', value: '[placeholder] MT' },
           { label: 'Duration', value: '[placeholder] Months' },
@@ -75,8 +66,7 @@ const timelineData = [
       {
         name: 'Godrej Play Bridge, Mumbai',
         category: 'Connecting Bridges',
-        imageFinished:
-          'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=900',
+        imageFinished: 'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=900',
         stats: [
           { label: 'Steel Erected', value: '[placeholder] MT' },
           { label: 'Duration', value: '[placeholder] Months' },
@@ -90,8 +80,7 @@ const timelineData = [
       {
         name: 'Lucknow Airport',
         category: 'Airports',
-        imageFinished:
-          'https://images.unsplash.com/photo-1473876637954-4b493d59fd97?auto=format&fit=crop&q=80&w=900',
+        imageFinished: 'https://images.unsplash.com/photo-1473876637954-4b493d59fd97?auto=format&fit=crop&q=80&w=900',
         stats: [
           { label: 'Steel Erected', value: '[placeholder] MT' },
           { label: 'Duration', value: '[placeholder] Months' },
@@ -101,8 +90,6 @@ const timelineData = [
   },
 ];
 
-/* ─── Component ─────────────────────────────────────────── */
-
 const TimelineShowcase = () => {
   const [activeYear, setActiveYear] = useState('2006');
   const { isAdminActive } = useAdmin();
@@ -110,7 +97,6 @@ const TimelineShowcase = () => {
   const activeIndex = timelineData.findIndex((e) => e.year === activeYear);
   const activeEntry = timelineData[activeIndex];
 
-  // Red line fills left-to-active-dot proportionally
   const progressPct =
     activeIndex === 0
       ? 0
@@ -120,7 +106,7 @@ const TimelineShowcase = () => {
     <section className="py-24 bg-blue-grey">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
 
-        {/* ── Section Header ─────────────────────────────── */}
+        {/* Section Header */}
         <div className="text-center mb-20">
           <span className="text-primary-red font-black text-xs uppercase tracking-[0.4em] mb-4 block">
             <EditText id="timeline_header_tag" defaultValue="Two Decades of Delivery" />
@@ -133,7 +119,7 @@ const TimelineShowcase = () => {
           </p>
         </div>
 
-        {/* ── Project Cards — keyed to year so animation re-fires ── */}
+        {/* Project Cards */}
         <div
           key={activeYear}
           className={`animate-in fade-in duration-500 mb-16 ${activeEntry.projects.length === 1
@@ -148,19 +134,20 @@ const TimelineShowcase = () => {
                 key={i}
                 className="group relative overflow-hidden h-[680px] cursor-default bg-charcoal"
               >
-                {/* ── Single full-width project image ── */}
+                {/* Full-width project image */}
                 <EditImage
                   id={`${cardId}_img`}
                   defaultUrl={project.imageFinished}
                   alt={project.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="absolute inset-0 w-full h-full"
+                  imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
 
-                {/* Vignette Overlay for readability of white text */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/35" />
+                {/* Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/35 pointer-events-none z-[5]" />
 
-                {/* ── Info bar — always visible at bottom, spans full width ── */}
-                <div className="absolute bottom-0 left-0 right-0 px-8 py-7 bg-transparent">
+                {/* Info bar */}
+                <div className="absolute bottom-0 left-0 right-0 px-8 py-7 bg-transparent z-[15]">
                   <span className="text-primary-red font-black text-[10px] uppercase tracking-[0.4em] block mb-2">
                     <EditText id={`${cardId}_category`} defaultValue={project.category} />
                   </span>
@@ -168,7 +155,7 @@ const TimelineShowcase = () => {
                     <EditText id={`${cardId}_name`} defaultValue={project.name} />
                   </h3>
 
-                  {/* Stats — slide up and fade in on hover */}
+                  {/* Stats on hover */}
                   <div className="flex items-end gap-8 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     {project.stats.map((stat, j) => (
                       <div key={j}>
@@ -193,21 +180,16 @@ const TimelineShowcase = () => {
           })}
         </div>
 
-        {/* ── Interactive Timeline Bar — below cards ──────────── */}
+        {/* Interactive Timeline Bar */}
         <div className="relative">
-          {/* Track container running from first dot center to last dot center */}
           <div className="absolute top-[9px] left-[9px] right-[9px] h-[2px]">
-            {/* Base track */}
             <div className="absolute inset-0 bg-charcoal/10" />
-
-            {/* Red progress fill */}
             <div
               className="absolute inset-y-0 left-0 bg-primary-red transition-all duration-500 ease-in-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>
 
-          {/* Year buttons */}
           <div className="relative flex justify-between">
             {timelineData.map((entry) => {
               const isActive = entry.year === activeYear;
@@ -219,14 +201,12 @@ const TimelineShowcase = () => {
                   className="relative flex flex-col items-center group focus:outline-none w-[18px] h-[18px]"
                   aria-label={`Show ${entry.year} projects`}
                 >
-                  {/* Dot */}
                   <div
                     className={`w-[18px] h-[18px] rounded-full border-2 z-10 transition-all duration-300 ${isActive
                       ? 'bg-primary-red border-primary-red shadow-[0_0_16px_rgba(204,0,0,0.55)]'
                       : 'bg-white border-charcoal/20 group-hover:border-primary-red'
                       }`}
                   />
-                  {/* Year label — absolutely positioned to not affect button width */}
                   <span
                     className={`absolute top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-black text-[11px] uppercase tracking-widest transition-colors duration-300 ${isActive
                       ? 'text-primary-red'

@@ -163,8 +163,11 @@ const HeroCarousel = () => {
                 id={`${slide.id}_img`}
                 defaultUrl={slide.image}
                 alt={slide.title || ''}
-                style={{ objectPosition: slide.objectPosition || 'center' }}
-                className="h-full w-full object-cover"
+                style={{ objectPosition: slide.objectPosition || 'center', willChange: 'transform' }}
+                className={`h-full w-full object-cover ${index === current
+                    ? 'scale-110 transition-transform duration-[10000ms] ease-linear'
+                    : 'scale-100'
+                  }`}
               />
             </div>
 
