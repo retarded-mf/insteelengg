@@ -74,7 +74,7 @@ const ClientProof = () => {
                     id={`home_clientproof_logo_img_${i}`} 
                     defaultUrl="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?auto=format&fit=crop&q=80&w=150" 
                     alt={`Client Logo ${i+1}`} 
-                    className={`w-full h-full object-contain filter ${active === i ? 'grayscale-0 opacity-100 scale-110' : 'grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100'} transition-all duration-300`}
+                    className={`w-full h-full object-contain filter ${active === i ? 'opacity-100 scale-110' : 'opacity-70 group-hover:opacity-100'} transition-all duration-300`}
                   />
                 </button>
               ))}

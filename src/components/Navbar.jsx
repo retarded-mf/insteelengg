@@ -6,12 +6,19 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAdmin } from '../context/AdminContext';
 import { EditImage } from './Editable';
+import { supabase } from '../lib/supabase';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
 const MEGA_PREVIEW_IMAGE = 'w-[400px] min-h-[300px]';
+
+const defaultCareersFallback = [
+  { baseId: 'job_0', title: 'Senior Structural Engineer' },
+  { baseId: 'job_1', title: 'Tekla Detailing Lead' },
+  { baseId: 'job_2', title: 'Site Erection Supervisor' }
+];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,6 +28,37 @@ const Navbar = () => {
     defaultUrl: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800'
   });
   const location = useLocation();
+
+  const [careersList, setCareersList] = useState(defaultCareersFallback);
+
+  useEffect(() => {
+    const fetchNavbarCareers = async () => {
+      try {
+        const { data } = await supabase
+          .from('content')
+          .select('element, url')
+          .eq('pagename', 'careers')
+          .eq('type', 'job');
+        if (data && data.length > 0) {
+          const imgBases = data.map(r => r.element.replace('_img', ''));
+          const titleElements = imgBases.map(b => `${b}_title`);
+          const { data: textData } = await supabase
+            .from('content')
+            .select('element, url')
+            .in('element', titleElements);
+          const textMap = {};
+          (textData || []).forEach(r => { textMap[r.element] = r.url; });
+          setCareersList(imgBases.map(base => ({
+            baseId: base,
+            title: textMap[`${base}_title`] || 'Position'
+          })));
+        }
+      } catch (err) {
+        console.error('Failed to query careers:', err);
+      }
+    };
+    fetchNavbarCareers();
+  }, []);
 
   const navLinks = [
     { name: 'Who We Are', path: '/about', id: 'who-we-are' },
@@ -90,8 +128,6 @@ const Navbar = () => {
     navigate('/admin');
   };
 
-
-
   const getNavPath = (originalPath) => {
     if (!isAdminActive) return originalPath;
     if (originalPath === '/') return '/admin?adminTab=home';
@@ -111,6 +147,24 @@ const Navbar = () => {
     }
     const cleanPath = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
     return `/admin?adminTab=${cleanPath}`;
+  };
+
+  // Highlighting active state logic for navbar links & sub-sections
+  const isLinkActive = (link) => {
+    const curPath = location.pathname;
+    if (link.id === 'who-we-are') {
+      return ['/about', '/events', '/team', '/awards', '/clients'].includes(curPath);
+    }
+    if (link.id === 'what-we-do') {
+      return curPath === '/what-we-do' || curPath.startsWith('/products/');
+    }
+    if (link.id === 'projects') {
+      return curPath === '/projects';
+    }
+    if (link.id === 'company') {
+      return ['/news', '/investor', '/annual-report'].includes(curPath);
+    }
+    return curPath === link.path;
   };
 
   useEffect(() => {
@@ -149,7 +203,7 @@ const Navbar = () => {
                 to={getNavPath(link.path)}
                 className={cn(
                   "text-[15px] font-black uppercase tracking-[0.1em] transition-colors flex items-center h-full",
-                  location.pathname === link.path || (link.id === 'what-we-do' && (location.pathname === '/what-we-do' || location.pathname.startsWith('/products/')))
+                  isLinkActive(link)
                     ? "text-primary-red"
                     : "text-charcoal hover:text-primary-red"
                 )}
@@ -236,7 +290,7 @@ const Navbar = () => {
                       ))}
                     </div>
                   </div>
-                  <div className={cn('relative bg-charcoal shrink-0 self-stretch', MEGA_PREVIEW_IMAGE)}>
+                  <div className={cn('relative bg-charcoal shrink-0', MEGA_PREVIEW_IMAGE)} style={{ height: '300px' }}>
                     {isAdminActive ? (
                       <EditImage
                         id={`mega_${hoveredMegaItem.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_img`}
@@ -276,20 +330,64 @@ const Navbar = () => {
             </div>
           ))}
 
-          {/* Careers standalone link */}
-          <Link
-            to={getNavPath("/careers")}
-            className={cn(
-              "text-[15px] font-black uppercase tracking-[0.1em] transition-colors",
-              location.pathname === '/careers' ? "text-primary-red" : "text-charcoal hover:text-primary-red"
-            )}
+          {/* Careers standalone link with hover dropdown */}
+          <div
+            className="h-full flex items-center relative"
+            onMouseEnter={() => setActiveMega('careers')}
           >
-            Careers
-          </Link>
+            <Link
+              to={getNavPath("/careers")}
+              className={cn(
+                "text-[15px] font-black uppercase tracking-[0.1em] transition-colors flex items-center h-full",
+                location.pathname === '/careers' ? "text-primary-red" : "text-charcoal hover:text-primary-red"
+              )}
+            >
+              Careers
+              {careersList.length > 0 && <ChevronDown className={cn("ml-1 w-4 h-4 transition-transform", activeMega === 'careers' && "rotate-180")} />}
+            </Link>
 
-          <Link to="/contact" className="btn-quote !text-[13px]">
-            <span>Contact Us</span>
-          </Link>
+            {activeMega === 'careers' && careersList.length > 0 && (
+              <div
+                className="absolute top-full left-0 w-[300px] bg-charcoal shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50 py-8 px-8 animate-duration-300"
+                onMouseEnter={() => setActiveMega('careers')}
+              >
+                <h4 className="text-[11px] text-primary-red font-black uppercase tracking-[0.4em] mb-4">
+                  Active Openings
+                </h4>
+                <div className="space-y-0">
+                  {careersList.map((job) => (
+                    <Link
+                      key={job.baseId}
+                      to={getNavPath(`/careers#job-card-${job.baseId}`)}
+                      onClick={(e) => {
+                        setActiveMega(null);
+                        if (location.pathname === '/careers') {
+                          e.preventDefault();
+                          const el = document.getElementById(`job-card-${job.baseId}`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                      }}
+                      className="block py-3.5 text-[13px] font-black text-gray-400 uppercase tracking-widest hover:text-white hover:translate-x-2 transition-all border-b border-white/5 truncate"
+                    >
+                      {job.title}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link 
+              to={getNavPath("/brochure")} 
+              className="px-6 py-3 font-black uppercase text-[13px] tracking-widest text-charcoal border-2 border-charcoal hover:bg-gray-500 hover:border-gray-500 hover:text-white transition-all duration-300 rounded"
+            >
+              Brochure
+            </Link>
+            <Link to="/contact" className="btn-quote !text-[13px]">
+              <span>Contact Us</span>
+            </Link>
+          </div>
         </div>
 
         {/* Admin Controls - Moved to the far right in their own block */}
@@ -330,7 +428,10 @@ const Navbar = () => {
             <Link to={getNavPath("/careers")} className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal" onClick={() => setIsOpen(false)}>
               Careers
             </Link>
-            <Link to={getNavPath("/contact")} className="btn-quote w-full mt-8" onClick={() => setIsOpen(false)}>
+            <Link to={getNavPath("/brochure")} className="block py-4 text-sm font-black uppercase tracking-widest text-charcoal border-2 border-charcoal text-center hover:bg-gray-500 hover:border-gray-500 hover:text-white transition-all duration-300 mt-4 rounded" onClick={() => setIsOpen(false)}>
+              Brochure
+            </Link>
+            <Link to={getNavPath("/contact")} className="btn-quote w-full mt-4" onClick={() => setIsOpen(false)}>
               <span>Contact Us</span>
             </Link>
           </div>

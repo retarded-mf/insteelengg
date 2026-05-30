@@ -21,6 +21,7 @@ import News from './News';
 import Investor from './Investor';
 import AnnualReport from './AnnualReport';
 import Careers from './Careers';
+import Brochure from './Brochure';
 
 const AdminLogin = () => {
   const { login, isAdminActive, session } = useAdmin();
@@ -91,6 +92,8 @@ const AdminLogin = () => {
         return <AnnualReport />;
       case 'careers':
         return <Careers />;
+      case 'brochure':
+        return <Brochure />;
       default:
         return <Home />;
     }
@@ -121,7 +124,7 @@ const AdminLogin = () => {
 
         {/* Error alert banner */}
         {error && (
-          <div className="w-full flex items-center gap-3.5 bg-red-50 border border-red-200 px-4 py-3 rounded text-[13px] text-red-700 animate-bounce">
+          <div className="w-full flex items-center gap-3.5 bg-red-50 border border-red-200 px-4 py-3 rounded text-[13px] text-red-700">
             <AlertTriangle className="text-primary-red shrink-0" size={18} />
             <span className="font-bold">Invalid username or password.</span>
           </div>

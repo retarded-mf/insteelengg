@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { EditText, EditImage } from './Editable';
 import { SectionManager } from './SectionManager';
 import { useAdmin } from '../context/AdminContext';
+import { PROJECT_CATEGORIES } from '../data/categories';
 
 /* ─── Premium Interactive Project Modal ────────────────────── */
 const ProjectModal = ({ project, onClose }) => {
@@ -224,7 +225,7 @@ const FlipCard = ({ project, onViewMore }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 p-8 z-10 pointer-events-auto">
             <div className="text-primary-red text-[10px] font-black uppercase tracking-[0.3em] mb-2.5">
-              <EditText id={`${project.baseId}_category`} defaultValue={project.category || 'Category'} />
+              <EditText id={`${project.baseId}_category`} defaultValue={project.category || 'Category'} options={PROJECT_CATEGORIES} />
             </div>
             <h3 className="text-white font-black text-2xl uppercase tracking-tighter leading-none mb-1.5 drop-shadow-md">
               <EditText id={`${project.baseId}_name`} defaultValue={project.name || 'Project Name'} />
@@ -252,7 +253,7 @@ const FlipCard = ({ project, onViewMore }) => {
           <div className="space-y-4">
             <div>
               <div className="text-primary-red text-[10px] font-black uppercase tracking-[0.4em] mb-2">
-                <EditText id={`${project.baseId}_category`} defaultValue={project.category || 'Category'} />
+                <EditText id={`${project.baseId}_category`} defaultValue={project.category || 'Category'} options={PROJECT_CATEGORIES} />
               </div>
               <h3 className="text-white font-black text-2xl uppercase tracking-tighter leading-none">
                 <EditText id={`${project.baseId}_name`} defaultValue={project.name || 'Project Name'} />

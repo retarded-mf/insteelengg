@@ -6,7 +6,7 @@ import { convertToWebp } from '../lib/convertToWebp';
 import { Edit3, Camera, Save, X, Image as ImageIcon, UploadCloud, Loader2 } from 'lucide-react';
 
 /* ─── Inline Editable Text Component ──────────────────────── */
-export const EditText = ({ id, defaultValue, className = '', isTextArea = false, truncate = null, maxLength = null }) => {
+export const EditText = ({ id, defaultValue, className = '', isTextArea = false, truncate = null, maxLength = null, options = null }) => {
   const { isAdminActive, getContent, setContent } = useAdmin();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -19,9 +19,9 @@ export const EditText = ({ id, defaultValue, className = '', isTextArea = false,
 
   useEffect(() => {
     if (isModalOpen) {
-      setInputValue(value || '');
+      setInputValue(value || (options ? options[0] : ''));
     }
-  }, [isModalOpen, value]);
+  }, [isModalOpen, value, options]);
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -80,7 +80,18 @@ export const EditText = ({ id, defaultValue, className = '', isTextArea = false,
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
                   Edit Content
                 </label>
-                {isTextArea ? (
+                {options ? (
+                  <select
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 focus:border-primary-red/50 focus:ring-1 focus:ring-primary-red/25 px-4 py-3 text-charcoal text-sm rounded transition-all focus:outline-none"
+                    autoFocus
+                  >
+                    {options.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : isTextArea ? (
                   <textarea
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
@@ -143,7 +154,7 @@ export const EditText = ({ id, defaultValue, className = '', isTextArea = false,
 };
 
 /* ─── Inline Editable Image Component ──────────────────────── */
-export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {} }) => {
+export const EditImage = ({ id, defaultUrl, className = '', imgClassName = 'object-cover', alt = '', style = {} }) => {
   const { isAdminActive, getContent, setContent } = useAdmin();
   const [uploading, setUploading] = useState(false);
 
@@ -198,7 +209,7 @@ export const EditImage = ({ id, defaultUrl, className = '', alt = '', style = {}
   return (
     <div className={`relative group/image overflow-hidden ${className}`} style={style}>
       {/* Standard Image tag */}
-      <img src={imageUrl} alt={alt} className="w-full h-full object-cover transition-all" />
+      <img src={imageUrl} alt={alt} className={`w-full h-full transition-all ${imgClassName}`} />
 
       {/* Admin Hover Overlay: Direct Upload Button */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover/image:opacity-100 flex flex-col items-center justify-center gap-4 transition-all duration-300 z-10">

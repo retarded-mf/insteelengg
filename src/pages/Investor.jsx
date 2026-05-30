@@ -1,10 +1,8 @@
 import React from 'react';
-import { useScrollReveal } from '../hooks/useScrollReveal';
 import { TrendingUp, Shield, BarChart3, Users } from 'lucide-react';
 import { EditText } from '../components/Editable';
 
 const Investor = () => {
-  useScrollReveal();
 
   return (
     <div className="bg-white min-h-screen">
@@ -36,7 +34,7 @@ const Investor = () => {
               { icon: BarChart3, stat: "38+", label: "Partner Facilities", color: "text-purple-600" },
               { icon: Shield, stat: "20+", label: "Years in Operations", color: "text-primary-red" },
             ].map((item, i) => (
-              <div key={i} className="bg-white p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all text-center reveal-on-scroll">
+              <div key={i} className="bg-white p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all text-center">
                 <item.icon size={36} className={`mx-auto mb-4 ${item.color}`} />
                 <div className="text-3xl font-black text-charcoal tracking-tighter mb-1">
                   <EditText id={`investor_stat_${i}_value`} defaultValue={item.stat} />
@@ -53,7 +51,7 @@ const Investor = () => {
       {/* Corporate Governance */}
       <section className="py-24 max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          <div className="reveal-on-scroll">
+          <div>
             <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase tracking-tighter">
               <EditText id="investor_governance_title" defaultValue="Corporate Governance" />
             </h2>
@@ -64,7 +62,7 @@ const Investor = () => {
               Contact Investor Relations
             </a>
           </div>
-          <div className="reveal-on-scroll space-y-6">
+          <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-charcoal uppercase tracking-tight mb-4">
               <EditText id="investor_docs_title" defaultValue="Key Documents" />
             </h3>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { EditText, EditImage } from './Editable';
@@ -15,74 +15,86 @@ const DEFAULT_SLIDES = [
   { id: 'hero_slide_5', image: 'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=1920', objectPosition: 'center 40%', link: '/projects' },
 ];
 
+/* Build ordered set of slide indices to keep mounted: current + adjacent */
+function getVisibleIndices(current, total) {
+  if (total === 0) return [];
+  const prev = current === 0 ? total - 1 : current - 1;
+  const next = current >= total - 1 ? 0 : current + 1;
+  return [...new Set([prev, current, next])];
+}
+
+const fetchSlides = async () => {
+  const { data: imgRows } = await supabase
+    .from('content')
+    .select('id,element, url, position, sequence')
+    .eq('pagename', 'home')
+    .eq('sectionno', 1)
+    .eq('type', 'image')
+    .order('sequence');
+
+  if (!imgRows || imgRows.length === 0) return [];
+
+  const textIds = imgRows.flatMap(r => {
+    const base = r.element.replace('_img', '');
+    return [`${base}_title`, `${base}_category`, `${base}_statement`];
+  });
+  const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
+  const textMap = {};
+  (textRows || []).forEach(r => { textMap[r.element] = r.url; });
+
+  return imgRows.map(row => {
+    const base = row.element.replace('_img', '');
+    return {
+      id: base,
+      dbId: row.element,
+      numericId: row.id,
+      image: row.url,
+      objectPosition: row.position || 'center',
+      link: '/projects',
+      title: textMap[`${base}_title`] || 'Slide Title',
+      category: textMap[`${base}_category`] || 'Category',
+      statement: textMap[`${base}_statement`] || 'Slide Statement',
+    };
+  });
+};
+
 const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
-  const { isAdminActive, getContent } = useAdmin();
+  const { isAdminActive } = useAdmin();
   const [isPaused, setIsPaused] = useState(false);
   const [slides, setSlides] = useState(DEFAULT_SLIDES);
 
   // Clamp current index whenever slides array changes (add/delete)
   useEffect(() => {
-    setCurrent((prev) => {
+    setCurrent(prev => {
       if (slides.length === 0) return 0;
       if (prev >= slides.length) return slides.length - 1;
       return prev;
     });
   }, [slides]);
 
-  // Fetch slide image rows from Supabase, build slides list
+  // Fetch slides from Supabase on mount
   useEffect(() => {
-    const fetchSlides = async () => {
-      const { data: imgRows } = await supabase
-        .from('content')
-        .select('id,element, url, position, sequence')
-        .eq('pagename', 'home')
-        .eq('sectionno', 1)
-        .eq('type', 'image')
-        .order('sequence');
-
-      if (!imgRows || imgRows.length === 0) {
-        setSlides([]);
-        return;
-      }
-
-      const textIds = imgRows.flatMap(r => {
-        const base = r.element.replace('_img', '');
-        return [`${base}_title`, `${base}_category`, `${base}_statement`];
-      });
-      const { data: textRows } = await supabase.from('content').select('element, url').in('element', textIds);
-      const textMap = {};
-      (textRows || []).forEach(r => { textMap[r.element] = r.url; });
-
-      setSlides(imgRows.map(row => {
-        const base = row.element.replace('_img', '');
-        return {
-          id: base,
-          dbId: row.element,
-          numericId: row.id,
-          image: row.url,
-          objectPosition: row.position || 'center',
-          link: '/projects',
-          title: textMap[`${base}_title`] || 'Slide Title',
-          category: textMap[`${base}_category`] || 'Category',
-          statement: textMap[`${base}_statement`] || 'Slide Statement',
-        };
-      }));
-    };
-    fetchSlides();
+    fetchSlides().then(rows => { if (rows.length > 0) setSlides(rows); });
   }, []);
 
   const total = slides.length;
-  const next = () => setCurrent((prev) => (total === 0 ? 0 : prev >= total - 1 ? 0 : prev + 1));
-  const prevSlide = () => setCurrent((prev) => (total === 0 ? 0 : prev === 0 ? total - 1 : prev - 1));
+  const next = useCallback(() => setCurrent(prev => (total === 0 ? 0 : prev >= total - 1 ? 0 : prev + 1)), [total]);
+  const prevSlide = useCallback(() => setCurrent(prev => (total === 0 ? 0 : prev === 0 ? total - 1 : prev - 1)), [total]);
 
+  // Auto-advance timer
   useEffect(() => {
     if (isPaused || total === 0) return;
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev >= total - 1 ? 0 : prev + 1));
-    }, 8000);
+    const timer = setInterval(next, 8000);
     return () => clearInterval(timer);
-  }, [isPaused, total]);
+  }, [isPaused, total, next]);
+
+  // Only keep current + adjacent slides mounted to reduce GPU load
+  const visibleIndices = getVisibleIndices(current, total);
+
+  const refreshSlides = useCallback(() => {
+    fetchSlides().then(rows => { if (rows.length > 0) setSlides(rows); });
+  }, []);
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-charcoal">
@@ -97,40 +109,7 @@ const HeroCarousel = () => {
         label="Manage Hero Slides"
         wrapperClassName="absolute top-40 right-6 z-50"
         renderItemLabel={(item) => item.title || 'Hero Slide'}
-        onUpdate={() => {
-          supabase
-            .from('content')
-            .select('id, element, url, position, sequence')
-            .eq('pagename', 'home')
-            .eq('sectionno', 1)
-            .eq('type', 'image')
-            .order('sequence')
-            .then(({ data: imgRows }) => {
-              if (!imgRows || imgRows.length === 0) { setSlides([]); return; }
-              const textIds = imgRows.flatMap(r => {
-                const base = r.element.replace('_img', '');
-                return [`${base}_title`, `${base}_category`, `${base}_statement`];
-              });
-              supabase.from('content').select('element, url').in('element', textIds).then(({ data: textRows }) => {
-                const textMap = {};
-                (textRows || []).forEach(r => { textMap[r.element] = r.url; });
-                setSlides(imgRows.map(row => {
-                  const base = row.element.replace('_img', '');
-                  return {
-                    id: base,
-                    dbId: row.element,
-                    numericId: row.id,
-                    image: row.url,
-                    objectPosition: row.position || 'center',
-                    link: '/projects',
-                    title: textMap[`${base}_title`] || 'Slide Title',
-                    category: textMap[`${base}_category`] || 'Category',
-                    statement: textMap[`${base}_statement`] || 'Slide Statement',
-                  };
-                }));
-              });
-            });
-        }}
+        onUpdate={refreshSlides}
       />
 
       {/* ── Universal Brand Statement — clears the h-32 fixed navbar ── */}
@@ -147,45 +126,66 @@ const HeroCarousel = () => {
         </div>
       </div>
 
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === current ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
-            }`}
-        >
-          {/* Vignette Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-10 pointer-events-none" />
-          <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none" />
+      {/*
+        Performance: only render prev/current/next slides.
+        Hidden slides are unmounted entirely — no GPU cost from off-screen images or admin overlays.
+      */}
+      {slides.map((slide, index) => {
+        const isCurrent = index === current;
+        const isMounted = visibleIndices.includes(index);
 
-          {/* Image */}
-          <div className="absolute inset-0 z-0">
-            <EditImage
-              id={`${slide.id}_img`}
-              defaultUrl={slide.image}
-              alt={slide.title || ''}
-              style={{ objectPosition: slide.objectPosition || 'center' }}
-              className={`h-full w-full object-cover transition-transform duration-[10000ms] ease-linear ${index === current && !slide.noZoom ? 'scale-110' : 'scale-100'}`}
-            />
-          </div>
+        if (!isMounted) return null;
 
-          {/* Content */}
-          <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 md:px-24 pointer-events-none">
-            {/* Main slide text — left-anchored and vertically centered */}
-            <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000 pointer-events-auto">
-              <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4 drop-shadow-md">
-                <EditText id={`${slide.id}_category`} defaultValue={slide.category || ''} />
-              </h3>
-              <h2 className="text-5xl md:text-8xl font-black text-white mb-10 leading-none uppercase tracking-tighter drop-shadow-2xl">
-                <EditText id={`${slide.id}_title`} defaultValue={slide.title || ''} />
-              </h2>
-              <Link to={slide.link} className="group inline-flex items-center space-x-4">
-                <span className="w-12 h-[2px] bg-white group-hover:w-20 group-hover:bg-primary-red group-hover:translate-x-2 transition-all duration-500" />
-                <span className="text-white font-black uppercase text-xs tracking-[0.4em] group-hover:text-primary-red transition-colors">View Project</span>
-              </Link>
+        return (
+          <div
+            key={slide.id || index}
+            className="absolute inset-0"
+            style={{
+              opacity: isCurrent ? 1 : 0,
+              zIndex: isCurrent ? 10 : 0,
+              transition: 'opacity 1000ms ease-in-out',
+              pointerEvents: isCurrent ? 'auto' : 'none',
+            }}
+          >
+            {/* Vignette Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none" />
+
+            {/* Image — zoom only on active slide to prevent off-screen GPU animations */}
+            <div
+              className="absolute inset-0 z-0"
+              style={{
+                transform: isCurrent ? 'scale(1.1)' : 'scale(1)',
+                transition: isCurrent ? 'transform 10000ms linear' : 'none',
+              }}
+            >
+              <EditImage
+                id={`${slide.id}_img`}
+                defaultUrl={slide.image}
+                alt={slide.title || ''}
+                style={{ objectPosition: slide.objectPosition || 'center' }}
+                className="h-full w-full object-cover"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 md:px-24 pointer-events-none">
+              <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000 pointer-events-auto">
+                <h3 className="text-white font-black text-sm md:text-lg lg:text-xl uppercase tracking-[0.5em] mb-4 opacity-90 border-l-2 border-primary-red pl-4 drop-shadow-md">
+                  <EditText id={`${slide.id}_category`} defaultValue={slide.category || ''} />
+                </h3>
+                <h2 className="text-5xl md:text-8xl font-black text-white mb-10 leading-none uppercase tracking-tighter drop-shadow-2xl">
+                  <EditText id={`${slide.id}_title`} defaultValue={slide.title || ''} />
+                </h2>
+                <Link to={slide.link} className="group inline-flex items-center space-x-4">
+                  <span className="w-12 h-[2px] bg-white group-hover:w-20 group-hover:bg-primary-red group-hover:translate-x-2 transition-all duration-500" />
+                  <span className="text-white font-black uppercase text-xs tracking-[0.4em] group-hover:text-primary-red transition-colors">View Project</span>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Navigation Controls */}
       <button

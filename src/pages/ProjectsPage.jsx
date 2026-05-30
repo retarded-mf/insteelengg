@@ -1,10 +1,15 @@
 import React from 'react';
 import ProjectGrid from '../components/ProjectGrid';
 import { EditText } from '../components/Editable';
+import SEO from '../components/SEO';
 
 const ProjectsPage = () => {
   return (
     <div className="bg-white min-h-screen">
+      <SEO 
+        title="Structural Steel Projects | Portfolio" 
+        description="Explore our portfolio of over 500 successfully delivered EPC projects, ranging from high-rise composite steel structures to airports and railways." 
+      />
       {/* Header */}
       <section className="pt-48 pb-24 bg-charcoal text-center">
         <div className="max-w-7xl mx-auto px-4">

@@ -4,6 +4,68 @@
 @tailwind components;
 @tailwind utilities;
 
+@media print {
+  /* Hide standard website UI */
+  header, footer, .no-print, nav, [class*="whatsapp"], a[href*="wa.me"] {
+    display: none !important;
+  }
+
+  /* Force background colors and images to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset body and container styles for print to bypass flex layouts and offset shifts */
+  html, body, #root, .flex-col, main, .min-h-screen, [class*="pt-"] {
+    display: block !important;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Page breaks for the brochure - exact A4 landscape size with safe margins */
+  .brochure-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: 297mm !important;
+    max-height: 210mm !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    padding: 12mm 16mm !important; /* Safe framing padding to prevent edge cropping */
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 0mm !important;
+  }
+
+  /* Force brochure page contents, grids and images to scale gracefully inside print padding */
+  .brochure-page * {
+    max-height: 100% !important;
+  }
+  .brochure-page img {
+    max-height: 100% !important;
+    object-fit: cover !important;
+  }
+  .brochure-page .grid {
+    height: 100% !important;
+    max-height: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+
 @layer base {
   body {
     @apply font-sans text-charcoal bg-white;

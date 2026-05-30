@@ -5,6 +5,7 @@ import { engineeringServices, constructionServices } from '../data/services';
 import { ExternalLink, Shield, Sun, Building2, HardHat, Ruler } from 'lucide-react';
 import { EditText, EditImage } from '../components/Editable';
 import { useAdmin } from '../context/AdminContext';
+import SEO from '../components/SEO';
 
 const WhatWeDo = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,6 +34,19 @@ const WhatWeDo = () => {
 
   return (
     <div className="bg-white min-h-screen">
+      <SEO
+        title="Engineering & Construction Services | Insteel EPC"
+        description="Comprehensive EPC solutions including structural engineering, BIM detailing, construction, solar mounting systems, and urban barricading."
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "serviceType": "Structural Engineering & EPC",
+          "provider": {
+            "@type": "Organization",
+            "name": "Insteel Engineers Pvt Ltd"
+          }
+        }}
+      />
       {/* Header */}
       <section className="pt-48 pb-12 bg-blue-grey text-center">
         <div className="max-w-7xl mx-auto px-4">
@@ -53,11 +67,10 @@ const WhatWeDo = () => {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center space-x-2 px-6 py-6 border-b-4 transition-all uppercase text-xs font-black tracking-widest ${
-                  activeTab === tab.id
+                className={`flex items-center space-x-2 px-6 py-6 border-b-4 transition-all uppercase text-xs font-black tracking-widest ${activeTab === tab.id
                     ? "border-primary-red text-primary-red"
                     : "border-transparent text-gray-400 hover:text-charcoal"
-                }`}
+                  }`}
               >
                 <tab.icon size={18} />
                 <span>{tab.label}</span>
@@ -85,7 +98,7 @@ const WhatWeDo = () => {
 
         {activeTab === 'construction' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="mb-12">
+            <div className="mb-12">
               <h2 className="text-4xl font-extrabold text-charcoal mb-4 uppercase">
                 <EditText id="whatwedo_construction_title" defaultValue="Construction & Delivery" />
               </h2>
@@ -107,7 +120,7 @@ const WhatWeDo = () => {
                 <EditText id="whatwedo_solar_desc" defaultValue="Insteel Solar provides integrated structural solutions for renewable energy projects, maximizing efficiency and structural integrity." isTextArea={true} />
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 { title: "In-Roof Solar Buildings", desc: "Patented structural solar implementation for industrial warehouses.", img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/in-roof-solar/" },
@@ -115,8 +128,8 @@ const WhatWeDo = () => {
                 { title: "Rooftop Solar", desc: "Custom designed racking for maximum energy yield on industrial roofs.", img: "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/rooftop-solar/" },
                 { title: "Ground-Mounted Solar", desc: "Scaleable structures for utility-scale solar farms.", img: "https://images.unsplash.com/photo-1466611653911-95281773ad90?auto=format&fit=crop&q=80&w=800", href: "https://insteelsolar.com/ground-mountaed-solar/" },
               ].map((solar, i) => (
-                <a 
-                  key={i} 
+                <a
+                  key={i}
                   href={isAdminActive ? undefined : solar.href}
                   target={isAdminActive ? undefined : "_blank"}
                   rel="noopener noreferrer"
@@ -124,7 +137,7 @@ const WhatWeDo = () => {
                   className="group bg-blue-grey p-8 flex flex-col sm:flex-row items-center gap-8 hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-primary-red"
                 >
                   <div className="w-full sm:w-48 h-32 overflow-hidden flex-shrink-0">
-                    <EditImage id={`whatwedo_solar_${i}_image`} defaultUrl={solar.img} alt={solar.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    <EditImage id={`whatwedo_solar_${i}_image`} defaultUrl={solar.img} alt={solar.title} className="w-full h-full object-cover transition-all duration-500" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-charcoal mb-2 flex items-center">
@@ -142,25 +155,25 @@ const WhatWeDo = () => {
 
         {activeTab === 'barricading' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-               <div className="h-[400px] bg-charcoal">
-                  <EditImage id="whatwedo_barricading_image" defaultUrl="https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" alt="Barricading" className="w-full h-full object-cover opacity-60" />
-               </div>
-               <div>
-                  <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase">
-                    <EditText id="whatwedo_barricading_title" defaultValue="Compliance Barricading" />
-                  </h2>
-                  <p className="text-lg text-gray-500 mb-4 leading-relaxed">
-                    <EditText id="whatwedo_barricading_desc" defaultValue="Mandate-compliant 35 ft and 25 ft steel barricades—engineered, fabricated, and installed by an integrated EPC. Reduce stop-work risk before execution begins." isTextArea={true} />
-                  </p>
-                  <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mb-8">
-                    <EditText id="whatwedo_barricading_spec" defaultValue="₹1–100 Cr. project scale · BMC / MMRDA aligned" />
-                  </p>
-                  <Link to={isAdminActive ? "/admin?adminTab=barricading" : "/products/barricading"} className="btn-red inline-flex items-center">
-                    Explore Barricading <ExternalLink size={20} className="ml-2" />
-                  </Link>
-               </div>
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+              <div className="h-[400px] bg-charcoal">
+                <EditImage id="whatwedo_barricading_image" defaultUrl="https://images.unsplash.com/photo-1517646281694-8ec8d091e3dc?auto=format&fit=crop&q=80&w=800" alt="Barricading" className="w-full h-full object-cover opacity-60" />
+              </div>
+              <div>
+                <h2 className="text-4xl font-extrabold text-charcoal mb-6 uppercase">
+                  <EditText id="whatwedo_barricading_title" defaultValue="Compliance Barricading" />
+                </h2>
+                <p className="text-lg text-gray-500 mb-4 leading-relaxed">
+                  <EditText id="whatwedo_barricading_desc" defaultValue="Mandate-compliant 35 ft and 25 ft steel barricades—engineered, fabricated, and installed by an integrated EPC. Reduce stop-work risk before execution begins." isTextArea={true} />
+                </p>
+                <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mb-8">
+                  <EditText id="whatwedo_barricading_spec" defaultValue="₹1–100 Cr. project scale · BMC / MMRDA aligned" />
+                </p>
+                <Link to={isAdminActive ? "/admin?adminTab=barricading" : "/products/barricading"} className="btn-red inline-flex items-center">
+                  Explore Barricading <ExternalLink size={20} className="ml-2" />
+                </Link>
+              </div>
+            </div>
           </div>
         )}
       </section>

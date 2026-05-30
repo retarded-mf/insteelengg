@@ -3,16 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Plus, Pencil, Trash2, Save, X, UploadCloud, Loader2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 
 /* ─── Helpers ──────────────────────────────────────────────── */
-const PROJECT_CATEGORIES = [
-  'High-Rise Buildings (Steel)',
-  'Connecting Bridges',
-  'Composite Buildings',
-  'Railway Stations',
-  'Airports',
-  'Special Structures',
-  'Industrial',
-  'Roofing',
-];
+import { PROJECT_CATEGORIES } from '../data/categories';
 
 const HERO_POSITIONS = ['center', 'top', 'bottom', 'left', 'right', 'center 20%', 'center 30%', 'center 40%'];
 

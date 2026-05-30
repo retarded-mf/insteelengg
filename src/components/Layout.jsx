@@ -20,7 +20,8 @@ const Layout = ({ children }) => {
     '/blog', '/events', '/contact', '/products/barricading', '/products/barricading/mandates', '/admin', '/news',
     '/investor', '/annual-report', '/careers'
   ];
-  const isNotFound = !knownRoutes.includes(pathname);
+  const isBlogDetail = pathname.startsWith('/blog/') && pathname !== '/blog';
+  const isNotFound = !knownRoutes.includes(pathname) && !isBlogDetail;
 
   if (isLoginScreen || isDashboard) {
     return <div className="min-h-screen bg-charcoal flex flex-col">{children}</div>;
@@ -43,7 +44,7 @@ const Layout = ({ children }) => {
         href="https://wa.me/918655795491"
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-300"
+        className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-300 no-print"
         style={{ backgroundColor: '#25D366' }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white">

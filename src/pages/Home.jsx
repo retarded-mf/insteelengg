@@ -10,6 +10,8 @@ import { EditText, EditImage } from '../components/Editable';
 import { SectionManager } from '../components/SectionManager';
 import { useSectionData } from '../hooks/useSectionData';
 
+import SEO from '../components/SEO';
+
 const Home = () => {
   useScrollReveal();
 
@@ -38,6 +40,10 @@ const Home = () => {
 
   return (
     <div>
+      <SEO 
+        title="Leading EPC Solutions for Steel Structures in India" 
+        description="Insteel Engineers Ltd is a premium structural steel EPC contractor in India specializing in design-build, fabrication, and erection." 
+      />
       {/* Hero */}
       <HeroCarousel />
 

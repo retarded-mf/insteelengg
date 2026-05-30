@@ -57,17 +57,17 @@ const OurClients = () => {
                 className="h-28 border border-gray-100 flex flex-col items-center justify-center hover:border-primary-red transition-all duration-300 relative group overflow-hidden bg-white hover:shadow-lg"
               >
                 <EditImage
-                  id={`${client.baseId || 'client_'+i}_image`}
+                  id={`${client.baseId || 'client_' + i}_image`}
                   defaultUrl={client.image || placeholderLogo}
                   alt={client.name || 'Client'}
-                  className="w-full h-full object-contain p-6 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+                  className="w-full h-full object-contain p-6 transition-all duration-300"
                 />
-                
+
                 {/* Admin only: name editor overlay so it can still be tracked in SectionManager lists */}
                 <div className="absolute bottom-0 left-0 right-0 bg-white/90 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-center z-20 pointer-events-none group-hover:pointer-events-auto">
-                   <div className="text-[9px] font-black uppercase tracking-widest text-charcoal">
-                      <EditText id={`${client.baseId || 'client_'+i}_name`} defaultValue={client.name || 'Client'} />
-                   </div>
+                  <div className="text-[9px] font-black uppercase tracking-widest text-charcoal">
+                    <EditText id={`${client.baseId || 'client_' + i}_name`} defaultValue={client.name || 'Client'} />
+                  </div>
                 </div>
               </div>
             ))}

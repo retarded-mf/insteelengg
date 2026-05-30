@@ -88,7 +88,7 @@ const TheTeam = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {team.map((member, i) => (
-              <div key={member.id || i} className="reveal-on-scroll text-center group">
+              <div key={member.id || i} className="text-center group">
                 <div className="h-96 overflow-hidden mb-6 shadow-xl relative">
                   <EditImage 
                     id={`${member.id || 'team_'+i}_img`}

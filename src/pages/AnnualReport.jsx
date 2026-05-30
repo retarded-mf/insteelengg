@@ -1,9 +1,9 @@
 import React from 'react';
-import { useScrollReveal } from '../hooks/useScrollReveal';
-import { FileText, Download } from 'lucide-react';
-import { EditText, EditImage } from '../components/Editable';
+import { FileText, Download, ExternalLink } from 'lucide-react';
+import { EditText, EditImage, EditFileButton } from '../components/Editable';
 import { SectionManager } from '../components/SectionManager';
 import { useSectionData } from '../hooks/useSectionData';
+import { useAdmin } from '../context/AdminContext';
 
 const defaultReports = [
   { title: "Annual Report 2024", year: "2024", description: "Comprehensive overview of Insteel's operations, financials, and strategic milestones for FY 2024.", image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800" },
@@ -12,8 +12,8 @@ const defaultReports = [
 ];
 
 const AnnualReport = () => {
-  useScrollReveal();
   const { items: reports, refetch } = useSectionData('annual-report', 'report', defaultReports);
+  const { isAdminActive, getContent } = useAdmin();
 
   return (
     <div className="bg-white min-h-screen">
@@ -44,34 +44,68 @@ const AnnualReport = () => {
           wrapperClassName="flex justify-end mb-8"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {reports.map((report, i) => (
-            <div key={report.dbId || i} className="group bg-white border border-gray-100 hover:shadow-2xl hover:border-primary-red/20 transition-all duration-500 reveal-on-scroll overflow-hidden">
-              <div className="h-48 overflow-hidden bg-blue-grey relative">
-                <EditImage
-                  id={`${report.baseId || 'report_'+i}_image`}
-                  defaultUrl={report.image}
-                  alt={report.title || 'Report'}
-                  className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                  <span className="text-white text-4xl font-black tracking-tighter">
-                    <EditText id={`${report.baseId || 'report_'+i}_year`} defaultValue={report.year || '2024'} />
-                  </span>
+          {reports.map((report, i) => {
+            const rid = report.baseId || 'report_'+i;
+            const docUrl = getContent(`${rid}_doc`, '');
+
+            return (
+              <div key={report.dbId || i} className="group bg-white border border-gray-100 hover:shadow-2xl hover:border-primary-red/20 transition-all duration-500 overflow-hidden">
+                <div className="h-48 overflow-hidden bg-blue-grey relative">
+                  <EditImage
+                    id={`${rid}_image`}
+                    defaultUrl={report.image}
+                    alt={report.title || 'Report'}
+                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                    <span className="text-white text-4xl font-black tracking-tighter">
+                      <EditText id={`${rid}_year`} defaultValue={report.year || '2024'} />
+                    </span>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-xl font-extrabold text-charcoal mb-3 uppercase tracking-tight">
+                    <EditText id={`${rid}_title`} defaultValue={report.title || 'Report Title'} />
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
+                    <EditText id={`${rid}_description`} defaultValue={report.description || 'Report description.'} isTextArea={true} />
+                  </p>
+
+                  {/* Download / View button — only works when a doc is linked */}
+                  {docUrl ? (
+                    <div className="flex items-center gap-4">
+                      <a
+                        href={docUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-primary-red font-bold uppercase tracking-widest text-xs hover:text-red-700 transition-colors"
+                      >
+                        <ExternalLink size={16} /> View Report
+                      </a>
+                      <a
+                        href={docUrl}
+                        download
+                        className="flex items-center gap-2 text-charcoal font-bold uppercase tracking-widest text-xs hover:text-primary-red transition-colors"
+                      >
+                        <Download size={16} /> Download
+                      </a>
+                    </div>
+                  ) : (
+                    <span className="text-gray-300 font-bold uppercase tracking-widest text-xs flex items-center gap-2">
+                      <FileText size={16} /> No document linked
+                    </span>
+                  )}
+
+                  {/* Admin: upload/link document */}
+                  <EditFileButton
+                    id={`${rid}_doc`}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                    label="Upload / Link Document"
+                  />
                 </div>
               </div>
-              <div className="p-8">
-                <h3 className="text-xl font-extrabold text-charcoal mb-3 uppercase tracking-tight">
-                  <EditText id={`${report.baseId || 'report_'+i}_title`} defaultValue={report.title || 'Report Title'} />
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
-                  <EditText id={`${report.baseId || 'report_'+i}_description`} defaultValue={report.description || 'Report description.'} isTextArea={true} />
-                </p>
-                <button className="flex items-center gap-2 text-primary-red font-bold uppercase tracking-widest text-xs group/link">
-                  <Download size={16} /> Download Report
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {reports.length === 0 && (
           <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">

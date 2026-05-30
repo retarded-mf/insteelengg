@@ -1,5 +1,4 @@
 import React from 'react';
-import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { EditText, EditImage } from '../components/Editable';
 import { SectionManager } from '../components/SectionManager';
@@ -13,7 +12,6 @@ const defaultNews = [
 ];
 
 const News = () => {
-  useScrollReveal();
   const { items: news, refetch } = useSectionData('news', 'news_article', defaultNews);
   const { isAdminActive } = useAdmin();
 
@@ -50,7 +48,7 @@ const News = () => {
             const articleLink = article.link || '#';
 
             return (
-              <div key={article.dbId || i} className="group bg-white border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-on-scroll flex flex-col justify-between">
+              <div key={article.dbId || i} className="group bg-white border border-gray-100 hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
                 <div>
                   <div className="h-56 overflow-hidden">
                     <EditImage
